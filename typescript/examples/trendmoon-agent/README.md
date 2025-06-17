@@ -1,74 +1,135 @@
-## Introduction
+# Hello Quickstart Agent
 
-The `examples` directory contains some implementations of on-chain AI agents, illustrating how they are easily built and deployed using the Arbitrum Vibetkit. These agents can act as MCP tools for compatibility with any system.
+A comprehensive example demonstrating **all v2 framework features** of the Arbitrum Vibekit Core framework. This agent serves as both an integration test and a developer template.
 
-## Running an Existing Agent
+## Overview
 
-### 1. Setup Environment
+The Hello Quickstart Agent showcases:
 
-Navigate to the desired agent's directory and create an `.env` file. Copy the contents of `.env.example` into the `.env` file and fill in any required secrets or configuration variables.
+- **Multiple Skills**: LLM-orchestrated and manual handlers
+- **Internal Tools**: Context-aware business logic tools
+- **MCP Integration**: Multiple mock MCP servers
+- **Hook System**: Tool enhancement with `withHooks`
+- **Context Management**: Custom context loading and type safety
+- **Error Handling**: Comprehensive error scenarios
+- **HTTP Endpoints**: Full REST API and MCP over SSE
 
-### 2. Start the Agent
+## Features Demonstrated
 
-There are two main ways to start an agent:
+### Core v2 Features
 
-- **Using Docker Compose**:
+- ✅ LLM orchestration with skill-specific prompts
+- ✅ Manual skill handlers that bypass LLM
+- ✅ Context-aware tools with strong typing
+- ✅ Multiple MCP servers per skill
+- ✅ Hook-based tool enhancement
+- ✅ Artifact creation and management
+- ✅ Comprehensive error handling with VibkitError
+- ✅ Environment variable configuration
 
-  Navigate to the `typescript` directory and install the necessary packages.
+### Skills
 
-  ```
-  cd typescript
-  pnpm install
-  pnpm build
-  ```
+1. **greet** (LLM-orchestrated)
 
-  Next, run the MCP-enabled Docker container to start your agent. Replace the `"agent-name"` with the name of your desired agent, for example: `"swapping-agent-no-wallet"`.
+   - Takes name and greeting style
+   - Uses multiple tools to generate personalized greetings
+   - Demonstrates multi-step LLM execution
 
-  ```
-  pnpm --filter "agent-name" docker:compose:up
-  ```
+2. **getTime** (Manual handler)
 
-  **Note**: If you get a `permission denied error`, try running the above command with `sudo`:
+   - Returns current time without LLM
+   - Shows manual handler bypass pattern
+   - Uses utility functions
 
-  ```
-  sudo pnpm --filter "agent-name" docker:compose:up
-  ```
+3. **echo** (Manual handler with artifacts)
+   - Echoes input with optional artifacts
+   - Demonstrates error handling
+   - Shows artifact creation
 
-- **Local Development**:
+### Tools
 
-  Navigate to the `typescript` directory and run the following `pnpm` commands to build
-  your agent. Replace the `"agent-name"` with the name of your desired agent, for example: `"swapping-agent-no-wallet"`.
+- `getFormalGreeting` - Returns formal greetings
+- `getCasualGreeting` - Returns casual greetings
+- `getLocalizedGreeting` - Enhanced with timestamps via hooks
+- `createEchoTool` - For echo skill
+- `createArtifactTool` - For artifact creation
 
-  ```
-  cd typescript
-  pnpm --filter "agent-name" install
-  pnpm --filter "agent-name" build
-  ```
+### Mock MCP Servers
 
-### 3. Interact with the Agent
+- `mock-mcp-translate` - Translation services
+- `mock-mcp-language` - Supported languages
+- `mock-mcp-time` - Timezone support
 
-- **Using the Inspector via npx**:
+## Quick Start
 
-  You can run the following `npx` command in another terminal to launch the Inspector.
+1. **Install dependencies**:
 
-  ```bash
-  npx -y @modelcontextprotocol/inspector
-  ```
+   ```bash
+   pnpm install
+   ```
 
-  It’s a convenient way to inspect or interact with your production agent without modifying your local environment.
+2. **Set up environment**:
 
-  **Note**: It might take a couple minutes for the agent to finish setting up. If you get errors of `Connection Error, is your MCP server running?`, try connecting to it in a couple of minutes.
+   ```bash
+   cp .env.example .env
+   # Add your OPENROUTER_API_KEY
+   ```
 
-- **Graphical MCP Clients**:
+3. **Run in development**:
 
-1. Cursor:
+   ```bash
+   pnpm dev
+   ```
 
-   Cursor is designed for lightweight command-line interactions. To integrate an agent into Cursor, update the configuration by editing the `mcp.json` file. Add an entry under the `mcpServers` key to define the agent’s settings. Cursor can run an agent via a local command (using npx) or point directly to an SSE (Server-Sent Events) endpoint. For detailed guidance on configuring MCP for Cursor, refer to https://docs.cursor.com/context/model-context-protocol.
+4. **Run tests**:
+   ```bash
+   pnpm test
+   ```
 
-2. Claude Desktop:
+## Project Structure
 
-   Claude Desktop supports similar agent configurations as Cursor but also includes additional settings such as filesystem access, which enhances its capability to work with local directories. To integrate an agent into Claude Desktop, update the configuration by editing the `claude_desktop_config.json` file. Add an entry under the `mcpServers` key to define the agent’s settings. Claude Desktop can run an agent via a local command (using npx) or point directly to an SSE (Server-Sent Events) endpoint.For detailed guidance on configuring MCP for Claude Desktop, refer to https://modelcontextprotocol.io/quickstart/user.
+```
+quickstart/
+├── src/
+│   ├── index.ts           # Agent entry point
+│   ├── skills/            # Skill definitions
+│   ├── tools/             # Internal tool implementations
+│   ├── hooks/             # Tool enhancement hooks
+│   └── context/           # Context provider
+├── mock-mcp-servers/      # Mock MCP server implementations
+├── test/                  # Integration tests
+└── package.json
+```
 
-3. Windsurf:
+## Testing
 
-   Windsurf offers a rich graphical interface and integrates its MCP configurations either through a configuration file named `windsurf_config.json` or via its built-in Settings panel. Windsurf’s configuration process often involves UI-based adjustments. For detailed guidance on configuring MCP for Windsurf, refer to https://docs.windsurf.com/windsurf/mcp.
+The integration test suite validates all framework features:
+
+```bash
+# Run full integration test
+pnpm test
+
+# Test specific endpoints
+curl http://localhost:3002/
+curl http://localhost:3002/.well-known/agent.json
+```
+
+## Environment Variables
+
+| Variable             | Description                                 | Required |
+| -------------------- | ------------------------------------------- | -------- |
+| `OPENROUTER_API_KEY` | OpenRouter API key for LLM                  | Yes      |
+| `PORT`               | Server port (default: 3002)                 | No       |
+| `LLM_MODEL`          | LLM model name (default: gpt-4o-2024-08-06) | No       |
+| `LOG_LEVEL`          | Logging level (default: debug)              | No       |
+
+## Developer Notes
+
+This agent is designed to be:
+
+- **Feature Complete**: Tests every v2 capability
+- **Minimal**: Simplest possible use of each feature
+- **Self-Contained**: Includes mock MCP servers
+- **Well-Documented**: Clear comments for each feature
+
+Use this as a template for building your own agents!
