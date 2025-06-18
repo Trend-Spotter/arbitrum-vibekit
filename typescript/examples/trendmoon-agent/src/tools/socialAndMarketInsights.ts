@@ -65,6 +65,12 @@ const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMark
 
 // Le hook 'after' pour formater la réponse JSON en un message lisible
 async function formatInsightsResponseHook(task: SuccessTask): Promise<SuccessTask> {
+    if (task.status.state === 'failed' || !task.result) {
+        // On s'assure qu'il y a un message d'erreur clair et on retourne.
+        task.status.message = task.status.message || "An unknown error occurred during tool execution.";
+        return task;
+    }
+
     const result = task.result as any;
     let message = "Here is the information I found:";
 

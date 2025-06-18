@@ -41,7 +41,11 @@ export const agentConfig: AgentConfig = {
             name: 'Route Trendmoon Query',
             description: 'Receives a natural-language query about crypto markets and routes it to the appropriate internal tool for execution.',
             inputSchema,
-
+            tags: ['crypto', 'analysis', 'sentiment'],
+            examples: [
+                'What is the sentiment for Solana?',
+                'Find me the top growing RWA tokens.',
+            ],
             // The tools the LLM can choose from are your defined business logic functions.
             tools: [
                 /*
@@ -60,6 +64,7 @@ export const agentConfig: AgentConfig = {
             // The framework will start this server and provide a client in the context.
             mcpServers: [
                 {
+                    command: 'node',
                     // This must match the name of your npm package for the MCP server
                     moduleName: 'trendmoon-mcp-server',
                     // Pass any environment variables your MCP server needs to start
