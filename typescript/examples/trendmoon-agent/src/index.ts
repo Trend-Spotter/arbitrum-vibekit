@@ -10,6 +10,7 @@ import { findFastestGrowingNarrativeTool } from './tools/findFastestGrowingNarra
 import { getTopCoinsInCategoryTool } from './tools/getTopCoinsInCategory.js';
 import { getFundamentalCatalystsTool } from './tools/getFundamentalCatalysts.js';
 import { findGrowingCoinsByCategoryAndChainTool } from './tools/findGrowingCoinsByCategoryAndChain.js';
+import {getSocialAndMarketInsightsTool} from "./tools/socialAndMarketInsights.js";
 
 // --- The System Prompt for the Routing LLM ---
 const ROUTING_SYSTEM_PROMPT = `You are an expert routing engine for the Trendmoon Agent. Your sole purpose is to analyze the user's query and match it to one of the available internal tools.
@@ -43,12 +44,16 @@ export const agentConfig: AgentConfig = {
 
             // The tools the LLM can choose from are your defined business logic functions.
             tools: [
+                /*
                 findCoinsByMindshareTool,
                 analyzeInvestmentTimingTool,
                 findFastestGrowingNarrativeTool,
                 getTopCoinsInCategoryTool,
                 getFundamentalCatalystsTool,
                 findGrowingCoinsByCategoryAndChainTool,
+
+                 */
+                getSocialAndMarketInsightsTool
             ],
 
             // This skill declares that it depends on your MCP server module.
