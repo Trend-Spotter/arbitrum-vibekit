@@ -28,8 +28,8 @@ class EntityResolver {
         console.log('[EntityResolver] Initializing cache...');
         try {
             const [categoriesRes, platformsRes] = await Promise.all([
-                mcpClient.callTool({ name: 'get_all_categories', arguments: {} }),
-                mcpClient.callTool({ name: 'get_all_platforms', arguments: {} }),
+                mcpClient.callTool({ name: 'getAllCategories', arguments: {} }),
+                mcpClient.callTool({ name: 'getPlatforms', arguments: {} }),
             ]);
 
             this.categories = categoriesRes.content || [];
