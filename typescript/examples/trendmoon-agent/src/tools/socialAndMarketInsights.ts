@@ -26,22 +26,18 @@ const SocialAndMarketInsightsSchema = z.object({
         .default("24h")
         .describe("The time period for analysis (e.g., '24h', '7d')."),
 
-    // --- AJOUTS IMPORTANTS ---
-    // Paramètre "brouillon" pour le LLM
+    // draft for LLM
     timeframe: z.string().optional().describe("A natural language description of a time period, e.g., 'last 7 days', 'past month'."),
 
-    // Paramètres finaux créés par le hook, qui seront envoyés au serveur MCP.
     start_date: z.string().datetime().optional().describe("The start date for a custom time range (ISO 8601 format)."),
     end_date: z.string().datetime().optional().describe("The end date for a custom time range (ISO 8601 format)."),
 });
 
-// L'outil de base qui contient la logique d'orchestration
 const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMarketInsightsSchema> = {
     name: 'get_social_and_market_insights',
     description: "Provides insights on social trends and market data for crypto tokens. Use this for ALL questions about token performance, mindshare, sentiment, catalysts, or finding lists of tokens based on criteria.",
     parameters: SocialAndMarketInsightsSchema,
 
-    // L'execute orchestre l'appel au MCP server
     execute: async (args, context) => {
         console.log(`[Tool:get_social_and_market_insights] Executing with analysis type: ${args.analysis_type}`);
 
@@ -51,8 +47,6 @@ const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMark
         }
 
         try {
-            // On appelle l'outil distant sur le MCP server
-            // Note: le nom 'getSocialAndMarketInsights' doit correspondre au nom enregistré sur le MCP server
             const mcpResponse = await mcpClient.callTool({
                 name: 'getSocialAndMarketInsights',
                 arguments: args
@@ -71,7 +65,6 @@ const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMark
     },
 };
 
-// Le hook 'after' pour formater la réponse JSON en un message lisible
 async function formatInsightsResponseHook(task: SuccessTask): Promise<SuccessTask> {
     if (task.status.state === 'failed' || !task.result) {
         // On s'assure qu'il y a un message d'erreur clair et on retourne.
@@ -115,9 +108,7 @@ async function formatInsightsResponseHook(task: SuccessTask): Promise<SuccessTas
     return task;
 }
 
-// On combine l'outil de base avec les hooks
 export const getSocialAndMarketInsightsTool = withHooks(baseSocialAndMarketInsightsTool, {
-    // Le hook 'before' s'exécute avant l'`execute` pour nettoyer les arguments
     before: entityResolutionHook,
     // Le hook 'after' s'exécute après un `execute` réussi pour formater la réponse
 //    after: formatInsightsResponseHook,
