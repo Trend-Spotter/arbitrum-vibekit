@@ -7,7 +7,7 @@ import {
     createErrorTask,
     VibkitError
 } from 'arbitrum-vibekit-core';
-import { entityResolutionHook } from '../hooks/entityResolutionHook.js'; // Assurez-vous que le chemin est correct
+import { entityResolutionHook } from '../hooks/entityResolutionHook.js';
 
 // Le schéma d'input est le même que celui défini sur le MCP server
 const SocialAndMarketInsightsSchema = z.object({
@@ -15,8 +15,8 @@ const SocialAndMarketInsightsSchema = z.object({
         .enum(["list", "detailed_summary", "catalyst_check"])
         .describe("The type of analysis to perform."),
     token_name: z.string().optional().describe("The name or symbol of the token (e.g., 'Solana', 'BTC')."),
-    narrative: z.string().optional().describe("The narrative to filter by (e.g., 'Meme', 'DeFi', 'RWA')."),
-    chain: z.string().optional().describe("The blockchain to filter by (e.g., 'Arbitrum', 'Solana')."),
+    narrative: z.string().optional().describe("The category or narrative to filter by. For example: 'DeFi', 'RWA', 'Gaming', 'Meme'."),
+    chain: z.string().optional().describe("The specific blockchain or platform to filter by. For example: 'Arbitrum', 'Solana', 'Ethereum'."),
     sort_by: z
         .enum(["mindshare_growth", "mindshare_total", "sentiment_positive"])
         .optional()
@@ -25,6 +25,14 @@ const SocialAndMarketInsightsSchema = z.object({
         .enum(["24h", "7d", "30d"])
         .default("24h")
         .describe("The time period for analysis (e.g., '24h', '7d')."),
+
+    // --- AJOUTS IMPORTANTS ---
+    // Paramètre "brouillon" pour le LLM
+    timeframe: z.string().optional().describe("A natural language description of a time period, e.g., 'last 7 days', 'past month'."),
+
+    // Paramètres finaux créés par le hook, qui seront envoyés au serveur MCP.
+    start_date: z.string().datetime().optional().describe("The start date for a custom time range (ISO 8601 format)."),
+    end_date: z.string().datetime().optional().describe("The end date for a custom time range (ISO 8601 format)."),
 });
 
 // L'outil de base qui contient la logique d'orchestration
@@ -112,5 +120,5 @@ export const getSocialAndMarketInsightsTool = withHooks(baseSocialAndMarketInsig
     // Le hook 'before' s'exécute avant l'`execute` pour nettoyer les arguments
     before: entityResolutionHook,
     // Le hook 'after' s'exécute après un `execute` réussi pour formater la réponse
-    after: formatInsightsResponseHook,
+//    after: formatInsightsResponseHook,
 });
