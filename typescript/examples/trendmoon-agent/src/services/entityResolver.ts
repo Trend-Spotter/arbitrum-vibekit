@@ -1,9 +1,7 @@
 import { VibkitError } from 'arbitrum-vibekit-core';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 
-// --- Définitions et Utilitaires ---
 interface CanonicalEntity { id: string; name: string; aliases: string[]; }
 
 function generateAliases(name: string): string[] {
@@ -29,7 +27,6 @@ const projectRoot = process.cwd();
 const CACHE_DIR = path.join(projectRoot, 'cache');
 const FALLBACK_DIR = path.join(projectRoot, 'src/data');
 
-// --- Classe EntityResolver Finale ---
 class EntityResolver {
     private static instance: EntityResolver;
     private categories: CanonicalEntity[] = [];
@@ -49,7 +46,6 @@ class EntityResolver {
     public async initialize(mcpClient: any) {
         const cacheDurationMs = parseInt(process.env.ENTITY_CACHE_DURATION_MINUTES || '60', 10) * 60 * 1000;
 
-        // ÉTAPE 1: VÉRIFIER LE CACHE EN MÉMOIRE
         if (this.isInitialized && (Date.now() - this.lastMemoryCacheTime < cacheDurationMs)) {
             console.log('[EntityResolver] In-memory cache is fresh. Using it.');
             return;
@@ -58,7 +54,6 @@ class EntityResolver {
         console.log('[EntityResolver] Cache is stale or not initialized.');
         await fs.mkdir(CACHE_DIR, { recursive: true });
 
-        // ÉTAPE 2: VÉRIFIER LE CACHE SUR DISQUE
         const latestCacheFile = await this.findLatestCacheFile('categories');
         if (latestCacheFile) {
             const fileTimestamp = this.getTimestampFromFilename(latestCacheFile);
@@ -66,14 +61,13 @@ class EntityResolver {
                 console.log('[EntityResolver] Found fresh disk cache. Loading from disk.');
                 try {
                     await this.loadCacheFromDisk(latestCacheFile);
-                    return; // Succès, on s'arrête ici
+                    return;
                 } catch (e) {
                     console.warn('[EntityResolver] Failed to load from disk cache, will try to refresh.', e.message);
                 }
             }
         }
 
-        // ÉTAPE 3: RAFRAÎCHIR DEPUIS LE SERVEUR MCP
         try {
             console.log('[EntityResolver] No valid cache found. Fetching from MCP server...');
             const [categoriesRes, platformsRes] = await Promise.all([
@@ -89,10 +83,9 @@ class EntityResolver {
             console.log('[EntityResolver] Successfully refreshed cache from server.');
 
         } catch (error) {
-            // ÉTAPE 4: FALLBACK SUR LES FICHIERS STATIQUES
             console.warn('[EntityResolver] MCP fetch failed. Falling back to static JSON files.', error.message);
             try {
-                await this.loadCacheFromDisk(null, true); // true pour forcer le chargement du fallback
+                await this.loadCacheFromDisk(null, true);
                 console.log(`[EntityResolver] Successfully loaded cache from static fallback files.`);
             } catch (fallbackError) {
                 console.error('[EntityResolver] CRITICAL: Failed to load from MCP and fallback.', fallbackError);
@@ -145,17 +138,16 @@ class EntityResolver {
             const cacheFiles = files
                 .filter(file => file.startsWith(prefix) && file.endsWith('.json'))
                 .sort()
-                .reverse(); // Trie du plus récent au plus ancien
+                .reverse();
             return cacheFiles.length > 0 ? cacheFiles[0] : null;
         } catch {
-            return null; // Le dossier n'existe pas ou erreur de lecture
+            return null;
         }
     }
 
     private getTimestampFromFilename(filename: string): number | null {
         const match = filename.match(/_(\d+)\.json$/);
         if (match?.[1]) {
-            // Convertir le timestamp Unix en millisecondes pour être cohérent avec Date.now()
             return parseInt(match[1], 10) * 1000;
         }
         return null;
