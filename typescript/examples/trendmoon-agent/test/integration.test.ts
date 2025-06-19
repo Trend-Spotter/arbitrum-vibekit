@@ -1,13 +1,15 @@
-// test/integration.test.ts (Version Corrigée)
+/**
+ * Trendmoon Agent Integration Tests
+ */
 
 import 'dotenv/config';
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
-import { z } from 'zod';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { z } from 'zod';
 
-import { Agent, defineSkill, defineTool, createSuccessTask, type AgentConfig } from 'arbitrum-vibekit-core/src/agent.js';
+import { Agent, defineSkill, type AgentConfig } from 'arbitrum-vibekit-core/src/agent.js';
 import { getSocialAndMarketInsightsTool } from '../src/tools/socialAndMarketInsights.js';
 
 describe('Trendmoon Agent - Integration Tests', () => {
@@ -20,7 +22,6 @@ describe('Trendmoon Agent - Integration Tests', () => {
 
   beforeAll(async () => {
     console.log('🚀 Starting Trendmoon Agent for integration testing...');
-
     testAgentConfig = {
       name: 'Test Trendmoon Agent',
       version: '1.0.0',
@@ -34,30 +35,33 @@ describe('Trendmoon Agent - Integration Tests', () => {
           examples: ['What is the sentiment for Solana?'],
           inputSchema: z.object({ query: z.string().min(1) }),
           tools: [ getSocialAndMarketInsightsTool ],
-          mcpServers: [
-            {
-              command: 'node',
-              moduleName: 'trendmoon-mcp-server',
-              env: { MCP_SERVER_PORT: process.env.MCP_SERVER_PORT || '50051' },
-            },
-          ],
+          mcpServers: [{
+            command: 'node',
+            moduleName: 'trendmoon-mcp-server',
+            env: { MCP_SERVER_PORT: process.env.MCP_SERVER_PORT || '50051' },
+          }],
         }),
       ],
       url: 'localhost',
       capabilities: { streaming: false, pushNotifications: false },
     };
+    const ORCHESTRATION_SYSTEM_PROMPT = `You are a helpful and expert crypto market analyst. Your job is to answer user questions based on data from tools.
+        
+        1.  Analyze the user's query to identify key entities like categories (narratives) and blockchains (chains).
+        2.  You MUST call the 'get_social_and_market_insights' tool, passing the extracted entities as arguments. For example, for "DeFi coins on Arbitrum", you must call the tool with narrative: 'DeFi' and chain: 'Arbitrum'.
+        3.  The tool will return JSON data. You must not output the raw JSON. Instead, synthesize it into a clear, helpful, human-readable answer.`;
 
     const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY || 'test-key' });
     agent = Agent.create(testAgentConfig, {
-      llm: { model: openrouter(process.env.LLM_MODEL || 'openai/gpt-4o') },
+      llm: { model: openrouter(process.env.LLM_MODEL || 'openai/gpt-4o'), system: ORCHESTRATION_SYSTEM_PROMPT, },
       cors: true,
     });
-
     await agent.start(port);
     baseUrl = `http://localhost:${port}`;
     console.log(`✅ Agent started on ${baseUrl}`);
   }, 20000);
 
+  // La configuration `afterAll` est correcte et ne change pas.
   afterAll(async () => {
     console.log('🛑 Shutting down test agent...');
     try {
@@ -76,12 +80,6 @@ describe('Trendmoon Agent - Integration Tests', () => {
     test('Agent should start and expose its skill', async () => {
       const tools = await mcpClient.listTools();
       expect(tools.tools).toHaveLength(1);
-      expect(tools.tools[0].name).toBe('route-trendmoon-query');
-    });
-
-    // CORRECTION : On ne teste plus `isConnected()`, la connexion réussie suffit.
-    test('Should establish an SSE connection successfully', () => {
-      expect(mcpClient).toBeDefined();
     });
 
     test('Should handle a query for a list of tokens by category', async () => {
@@ -90,41 +88,88 @@ describe('Trendmoon Agent - Integration Tests', () => {
         arguments: { query: 'Find top RWA coins' },
       });
 
-      const content = result.content as any[];
-      // Le framework enveloppe le résultat dans une ressource, puis dans un Message
-      const messageWrapper = JSON.parse(content[0].resource.text);
+      // 1. On extrait la chaîne de caractères JSON de la ressource
+      const taskString = result.content[0].resource.text;
+      const task = JSON.parse(taskString);
 
-      // 1. On vérifie qu'on a bien un objet Message
-      expect(messageWrapper.kind).toBe('task');
-
-      // 2. Le vrai résultat de notre outil (la Task) est stringifié dans la partie texte du Message
-      const task = JSON.parse(messageWrapper.parts[0].text);
-
-      // 3. Maintenant on peut tester la Task comme prévu !
+      // 2. On vérifie que la tâche a bien réussi
+      expect(task.kind).toBe('task');
       expect(task.status.state).toBe('completed');
-      expect(task.status.message).toContain('Top Tokens Matching Your Criteria');
+
+      // 3. On navigue dans la structure pour trouver les données brutes
+      const rawResult = task.status.message.parts[0].text;
+
+      // 4. On teste les données brutes retournées par l'outil
+      expect(rawResult.filter.narrative).toBe('Real World Assets (RWA)');
+      expect(rawResult.results).toBeInstanceOf(Array);
+      expect(rawResult.results.length).toBeGreaterThan(0);
     }, 20000);
 
     test('Should handle a query for a detailed analysis of a single token', async () => {
       const result = await mcpClient.callTool({
         name: 'route-trendmoon-query',
-        arguments: { query: 'Is SOL a good buy?' },
+        arguments: { query: 'What is the sentiment for Solana?' },
       });
 
-      const content = result.content as any[];
-      console.log(content);
-      const messageWrapper = JSON.parse(content[0].resource.text);
-      console.log(messageWrapper.parts);
+      // 1. Extraire la Task
+      const taskString = result.content[0].resource.text;
+      const task = JSON.parse(taskString);
 
-      // 1. On vérifie la structure Message
-      expect(messageWrapper.kind).toBe('task');
-
-      // 2. On extrait et on parse la Task
-      const task = JSON.parse(messageWrapper.parts[0].text);
-
-      // 3. On teste la Task
+      // 2. Vérifier le statut
+      expect(task.kind).toBe('task');
       expect(task.status.state).toBe('completed');
-      expect(task.status.message).toContain('Analysis for $SOL');
+
+      // 3. Naviguer jusqu'au résultat brut
+      const rawResult = task.status.message.parts[0].text;
+
+      // 4. Tester le résultat brut
+      expect(rawResult.token).toBe('Solana');
+      expect(rawResult).toHaveProperty('social_posture');
+    }, 20000);
+
+    test('Should correctly process a query with platform and category via the hook', async () => {
+      const result = await mcpClient.callTool({
+        name: 'route-trendmoon-query',
+        arguments: { query: 'Find top DeFi coins on Arbitrum' },
+      });
+
+      const taskString = result.content[0].resource.text;
+      const task = JSON.parse(taskString);
+
+      expect(task.kind).toBe('task');
+      expect(task.status.state).toBe('completed');
+
+      const rawResult = task.status.message.parts[0].text
+
+      expect(rawResult.filter).toBeDefined();
+      expect(rawResult.filter.narrative).toBe('Decentralized Finance (DeFi)');
+      expect(rawResult.filter.chain).toBe('arbitrum-one');
+
+    }, 20000);
+
+    test('Should correctly process a query with a timeframe via the hook', async () => {
+
+      const result = await mcpClient.callTool({
+        name: 'route-trendmoon-query',
+        arguments: { query: 'What are the top growing coins in the last 30 days?' },
+      });
+
+      const taskString = result.content[0].resource.text;
+      const task = JSON.parse(taskString);
+
+      expect(task.kind).toBe('task');
+      expect(task.status.state).toBe('completed');
+
+      const rawResult = task.status.message.parts[0].text;
+
+      // console.log('[Timeframe Test] Echoed args from MCP:', rawResult);
+
+      expect(rawResult.filter).not.toHaveProperty('timeframe');
+      expect(rawResult.filter).toHaveProperty('start_date');
+      expect(rawResult.filter).toHaveProperty('end_date');
+      expect(rawResult.filter.start_date).toMatch(/^\d{4}-\d{2}-\d{2}/);
+      expect(rawResult.filter.end_date).toMatch(/^\d{4}-\d{2}-\d{2}/);
+
     }, 20000);
   });
 });
