@@ -1,4 +1,3 @@
-import { VibkitError } from 'arbitrum-vibekit-core';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -21,7 +20,7 @@ function generateAliases(name: string): string[] {
     aliases.add(acronymMatch[1].toLowerCase());
   }
 
-  const textBeforeParentheses = name.split('(')[0].trim();
+  const textBeforeParentheses = name.split('(')[0]?.trim();
   if (textBeforeParentheses && textBeforeParentheses.toLowerCase() !== lowerCaseName) {
     aliases.add(textBeforeParentheses.toLowerCase());
   }
@@ -74,8 +73,8 @@ class EntityResolver {
         })
       ]);
 
-      const categoryNames = JSON.parse(categoriesRes.content[0].text);
-      const platformNames = JSON.parse(platformsRes.content[0].text);
+      const categoryNames = JSON.parse((categoriesRes.content as any)?.[0]?.text || '[]');
+      const platformNames = JSON.parse((platformsRes.content as any)?.[0]?.text || '[]');
 
       this.populateCache(categoryNames, platformNames);
       console.log(`[EntityResolver] Successfully loaded cache from MCP server.`);

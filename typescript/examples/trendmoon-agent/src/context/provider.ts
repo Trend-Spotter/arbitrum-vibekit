@@ -7,7 +7,7 @@ import type { TrendmoonContext } from './types.js';
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { entityResolver } from '../services/entityResolver.js';
 
-export async function contextProvider(deps: { mcpClients: Record<string, Client> }): Promise<TrendmoonContext> {
+export async function contextProvider(deps: { mcpClients: Record<string, any> }): Promise<TrendmoonContext> {
   console.error('[Context] Loading Trendmoon context from MCP servers...');
 
   const { mcpClients } = deps;

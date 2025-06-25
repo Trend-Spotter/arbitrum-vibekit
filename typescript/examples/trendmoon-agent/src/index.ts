@@ -4,7 +4,7 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { z } from 'zod';
 import { contextProvider } from './context/provider.js';
 import type { TrendmoonContext } from './context/types.js';
-import { dummyTool } from './tools/dummyTool.js';
+import { getSocialAndMarketInsightsTool } from './tools/socialAndMarketInsights.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -68,7 +68,7 @@ export const agentConfig: AgentConfig = {
                 'Find growing DeFi projects on Arbitrum',
                 'What narrative is trending this week?'
             ],
-            tools: [dummyTool], // Minimal tool to satisfy framework requirement
+            tools: [getSocialAndMarketInsightsTool], // Real tool for crypto insights
 
             // Connect to our MCP server to access all Trendmoon tools
             mcpServers: [
@@ -78,7 +78,7 @@ export const agentConfig: AgentConfig = {
                     moduleName: 'trendmoon-mcp-server',
                     env: {
                         TRENDMOON_API_KEY: process.env.TRENDMOON_API_KEY || '',
-                        TRENDMOON_API_URL: process.env.TRENDMOON_API_URL || 'https://api.trendmoon.io',
+                        TRENDMOON_API_URL: process.env.TRENDMOON_API_URL || 'https://api.qa.trendmoon.ai',
                         LLM_API_KEY: process.env.OPENROUTER_API_KEY || '',
                         LLM_BASE_URL: process.env.LLM_BASE_URL || 'https://openrouter.ai/api/v1',
                         LLM_MODEL_NAME: process.env.LLM_MODEL || 'google/gemini-2.5-flash-preview',
