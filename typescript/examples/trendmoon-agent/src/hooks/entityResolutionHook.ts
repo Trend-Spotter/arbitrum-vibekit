@@ -1,9 +1,10 @@
-import { type ToolExecutionContext } from 'arbitrum-vibekit-core';
+import { type HookFunction } from 'arbitrum-vibekit-core';
 import { entityResolver } from '../services/entityResolver.js';
 import { VibkitError } from 'arbitrum-vibekit-core';
 import { parseTimeframe } from "../utils/timeframeParser.js";
+import type { TrendmoonContext } from '../context/types.js';
 
-export async function entityResolutionHook(args: any, context: ToolExecutionContext): Promise<any> {
+export const entityResolutionHook: HookFunction<any, any, TrendmoonContext, any> = async (args: any, context): Promise<any> => {
     const mcpClient = context.mcpClients?.['trendmoon-mcp-server'];
     if (!mcpClient) {
         throw new VibkitError('ClientError', -32603, 'Trendmoon MCP client not available for entity resolution.');
@@ -47,4 +48,4 @@ export async function entityResolutionHook(args: any, context: ToolExecutionCont
     }
 
     return args;
-}
+};

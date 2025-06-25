@@ -2,28 +2,43 @@ import 'dotenv/config';
 import { Agent, type AgentConfig, defineSkill } from 'arbitrum-vibekit-core';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { z } from 'zod';
+import { contextProvider } from './context/provider.js';
+import type { TrendmoonContext } from './context/types.js';
+import { dummyTool } from './tools/dummyTool.js';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
 
-// --- Import all your defined tools ---
-import { findCoinsByMindshareTool } from './tools/findCoinsByMindshare.js';
-import { analyzeInvestmentTimingTool } from './tools/analyzeInvestmentTiming.js';
-import { findFastestGrowingNarrativeTool } from './tools/findFastestGrowingNarrative.js';
-import { getTopCoinsInCategoryTool } from './tools/getTopCoinsInCategory.js';
-import { getFundamentalCatalystsTool } from './tools/getFundamentalCatalysts.js';
-import { findGrowingCoinsByCategoryAndChainTool } from './tools/findGrowingCoinsByCategoryAndChain.js';
-import {getSocialAndMarketInsightsTool} from "./tools/socialAndMarketInsights.js";
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// --- The System Prompt for the Routing LLM ---
-const ROUTING_SYSTEM_PROMPT = `You are a helpful and expert crypto market analyst. Your job is to answer user questions based on data from tools.
+// --- The System Prompt for the Trendmoon Agent ---
+const TRENDMOON_SYSTEM_PROMPT = `You are a Trendmoon Agent that provides insights on social trends and market data for crypto tokens. 
 
-Your process has two steps:
-1.  First, you MUST call the correct tool to get the necessary data. The tool will return structured JSON.
-2.  **This is your most important task:** Do NOT output the raw JSON. You MUST then take that JSON data and synthesize it into a clear, helpful, and well-formatted human-readable answer using Markdown.
+You have access to comprehensive market data tools that can:
+- Analyze token performance with social metrics and market data
+- Find trending narratives and top performing categories
+- Provide investment insights and catalyst analysis
+- Search and discover tokens by various criteria
+- Track social sentiment and trending keywords
 
-Never give direct financial advice (e.g., "you should buy this"). Instead, present the data objectively (e.g., "The sentiment is positive, and the price has increased.").`;
+When responding to queries:
+1. Use the available MCP tools to gather relevant data
+2. Provide clear, actionable insights
+3. Focus on social trends, market sentiment, and token performance
+4. Format responses in a user-friendly way
+5. Always base your analysis on the actual data returned from the tools
 
-// --- The user's query will be wrapped in this object ---
+Available analysis types:
+- 'list' for top tokens with filtering options
+- 'detailed_summary' for deep dive analysis on one token  
+- 'catalyst_check' for upcoming events and catalysts
+
+You can filter by narrative (e.g., 'Meme', 'DeFi', 'RWA') and chain (e.g., 'Arbitrum', 'Solana').`;
+
+// --- Simple input schema - just query ---
 const inputSchema = z.object({
-    query: z.string().describe("The user's natural language question to be routed to the correct tool."),
+    query: z.string().describe("The user's natural language question about crypto trends and market data."),
 });
 
 // Create OpenRouter LLM provider instance
@@ -35,53 +50,50 @@ const openrouter = createOpenRouter({
 export const agentConfig: AgentConfig = {
     name: process.env.AGENT_NAME || 'Trendmoon Agent',
     version: process.env.AGENT_VERSION || '1.0.0',
-    description: process.env.AGENT_DESCRIPTION || 'An intelligent agent that understands crypto market queries and routes them to the correct Trendmoon tool.',
+    description: process.env.AGENT_DESCRIPTION || 'Provides insights on social trends and market data for crypto tokens. Use this for questions about mindshare, sentiment, catalysts, and token performance.',
 
-    // This single skill acts as the main entry point and orchestrator
+    // Single skill that handles all trendmoon queries
     skills: [
         defineSkill({
-            id: 'route-trendmoon-query',
-            name: 'Route Trendmoon Query',
-            description: 'Receives a natural-language query about crypto markets and routes it to the appropriate internal tool for execution.',
+            id: 'trendmoon-insights',
+            name: 'Trendmoon Insights',
+            description: 'Provides insights on social trends and market data for crypto tokens. Can return sorted lists or detailed analysis for one token, and suggests specialized prompts.',
             inputSchema,
-            tags: ['crypto', 'analysis', 'sentiment'],
+            
+            // Required properties
+            tags: ['crypto', 'social-trends', 'market-data', 'sentiment-analysis'],
             examples: [
-                'What is the sentiment for Solana?',
-                'Find me the top growing RWA tokens.',
+                'What are the top meme tokens right now?',
+                'Analyze BTC social trends',
+                'Find growing DeFi projects on Arbitrum',
+                'What narrative is trending this week?'
             ],
-            // The tools the LLM can choose from are your defined business logic functions.
-            tools: [
-                /*
-                findCoinsByMindshareTool,
-                analyzeInvestmentTimingTool,
-                findFastestGrowingNarrativeTool,
-                getTopCoinsInCategoryTool,
-                getFundamentalCatalystsTool,
-                findGrowingCoinsByCategoryAndChainTool,
+            tools: [dummyTool], // Minimal tool to satisfy framework requirement
 
-                 */
-                getSocialAndMarketInsightsTool
-            ],
-
-            // This skill declares that it depends on your MCP server module.
-            // The framework will start this server and provide a client in the context.
+            // Connect to our MCP server to access all Trendmoon tools
             mcpServers: [
                 {
+                    // Use the actual trendmoon-mcp-server module
                     command: 'node',
-                    // This must match the name of your npm package for the MCP server
                     moduleName: 'trendmoon-mcp-server',
-                    // Pass any environment variables your MCP server needs to start
                     env: {
-                        MCP_SERVER_PORT: process.env.MCP_SERVER_PORT || '50051',
-                        TRENDMOON_API_KEY: process.env.TRENDMOON_API_KEY,
+                        TRENDMOON_API_KEY: process.env.TRENDMOON_API_KEY || '',
+                        TRENDMOON_API_URL: process.env.TRENDMOON_API_URL || 'https://api.trendmoon.io',
+                        LLM_API_KEY: process.env.OPENROUTER_API_KEY || '',
+                        LLM_BASE_URL: process.env.LLM_BASE_URL || 'https://openrouter.ai/api/v1',
+                        LLM_MODEL_NAME: process.env.LLM_MODEL || 'google/gemini-2.5-flash-preview',
                     },
                 },
             ],
-            // NO HANDLER: The framework uses the LLM to orchestrate calling one of the listed `tools`.
+            
+            // NO HANDLER: Let the LLM orchestrate using the MCP tools directly
+            // The LLM will automatically discover and use available tools from the MCP server
         }),
     ],
     url: 'localhost',
     capabilities: { streaming: false, pushNotifications: false },
+    defaultInputModes: ['application/json'],
+    defaultOutputModes: ['application/json'],
 };
 
 // Configure and start the agent
@@ -89,16 +101,17 @@ const agent = Agent.create(agentConfig, {
     cors: true,
     llm: {
         model: openrouter(process.env.LLM_MODEL || 'google/gemini-2.5-flash-preview'),
-        system: ROUTING_SYSTEM_PROMPT,
+        baseSystemPrompt: TRENDMOON_SYSTEM_PROMPT,
     },
 });
 
 const PORT = parseInt(process.env.PORT || '3008', 10);
-agent.start(PORT)
+agent.start(PORT, contextProvider)
     .then(() => {
         console.log(`🚀 Trendmoon Agent running on port ${PORT}`);
         console.log(`📍 Base URL: http://localhost:${PORT}`);
-        console.log(`🤖 Send a POST request to interact. Example:`);
-        console.log(`   curl -X POST -H "Content-Type: application/json" -d '{"query": "Would SOL be at a good point to buy?"}' http://localhost:${PORT}`);
+        console.log(`🤖 Send a POST request to interact. Examples:`);
+        console.log(`   curl -X POST -H "Content-Type: application/json" -d '{"query": "What are the top meme tokens right now?"}' http://localhost:${PORT}`);
+        console.log(`   curl -X POST -H "Content-Type: application/json" -d '{"query": "Analyze BTC social trends"}' http://localhost:${PORT}`);
     })
     .catch((error) => console.error('Failed to start agent:', error));
