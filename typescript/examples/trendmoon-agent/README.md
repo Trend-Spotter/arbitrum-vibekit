@@ -1,135 +1,198 @@
-# Hello Quickstart Agent
+# Trendmoon Agent
 
-A comprehensive example demonstrating **all v2 framework features** of the Arbitrum Vibekit Core framework. This agent serves as both an integration test and a developer template.
+A Vibekit agent that provides insights on social trends and market data for crypto tokens using the Trendmoon MCP server. This agent demonstrates integration with external data services through MCP (Model Context Protocol).
 
 ## Overview
 
-The Hello Quickstart Agent showcases:
+The Trendmoon Agent provides:
 
-- **Multiple Skills**: LLM-orchestrated and manual handlers
-- **Internal Tools**: Context-aware business logic tools
-- **MCP Integration**: Multiple mock MCP servers
-- **Hook System**: Tool enhancement with `withHooks`
-- **Context Management**: Custom context loading and type safety
-- **Error Handling**: Comprehensive error scenarios
-- **HTTP Endpoints**: Full REST API and MCP over SSE
+- **Social Trend Analysis**: Track crypto token social metrics and sentiment
+- **Market Data Insights**: Get comprehensive market performance data
+- **Category Analysis**: Discover trending narratives and market sectors
+- **Investment Insights**: Analyze tokens for investment opportunities
+- **Real-time Data**: Access to live social and market data via Trendmoon API
 
-## Features Demonstrated
+## Features
 
-### Core v2 Features
+### Core Capabilities
 
-- ✅ LLM orchestration with skill-specific prompts
-- ✅ Manual skill handlers that bypass LLM
-- ✅ Context-aware tools with strong typing
-- ✅ Multiple MCP servers per skill
-- ✅ Hook-based tool enhancement
-- ✅ Artifact creation and management
-- ✅ Comprehensive error handling with VibkitError
-- ✅ Environment variable configuration
+- ✅ Simple query interface - accepts natural language questions
+- ✅ Intelligent entity resolution with caching system
+- ✅ Automatic category and platform name resolution
+- ✅ Timeframe parsing (7d, 1m, etc.)
+- ✅ Integration with Trendmoon MCP server (25+ tools available)
+- ✅ Context-aware hooks for data preprocessing
+- ✅ Fallback to local data files when API unavailable
 
-### Skills
+### Supported Queries
 
-1. **greet** (LLM-orchestrated)
+1. **Token Analysis**
+   - "Analyze BTC social trends"
+   - "What are the fundamentals for ETH?"
+   - "Is SOL a good buy right now?"
 
-   - Takes name and greeting style
-   - Uses multiple tools to generate personalized greetings
-   - Demonstrates multi-step LLM execution
+2. **Market Discovery**
+   - "What are the top meme tokens?"
+   - "Find growing DeFi projects on Arbitrum"
+   - "Show me trending narratives this week"
 
-2. **getTime** (Manual handler)
+3. **Category Insights**
+   - "Compare DeFi vs RWA performance"
+   - "What's the fastest growing category?"
+   - "Top alerts for today"
 
-   - Returns current time without LLM
-   - Shows manual handler bypass pattern
-   - Uses utility functions
+### Entity Resolution System
 
-3. **echo** (Manual handler with artifacts)
-   - Echoes input with optional artifacts
-   - Demonstrates error handling
-   - Shows artifact creation
+The agent includes intelligent entity resolution:
 
-### Tools
-
-- `getFormalGreeting` - Returns formal greetings
-- `getCasualGreeting` - Returns casual greetings
-- `getLocalizedGreeting` - Enhanced with timestamps via hooks
-- `createEchoTool` - For echo skill
-- `createArtifactTool` - For artifact creation
-
-### Mock MCP Servers
-
-- `mock-mcp-translate` - Translation services
-- `mock-mcp-language` - Supported languages
-- `mock-mcp-time` - Timezone support
+- **Categories**: "meme" → "Meme", "defi" → "DeFi" 
+- **Platforms**: "arbitrum" → "Arbitrum", "solana" → "Solana"
+- **Timeframes**: "7d" → last 7 days with specific dates
+- **Caching**: 60-minute cache with MCP fallback to local files
 
 ## Quick Start
 
 1. **Install dependencies**:
-
    ```bash
    pnpm install
    ```
 
 2. **Set up environment**:
-
    ```bash
    cp .env.example .env
-   # Add your OPENROUTER_API_KEY
+   # Add your required API keys:
+   # OPENROUTER_API_KEY=your_openrouter_key
+   # TRENDMOON_API_KEY=your_trendmoon_key
    ```
 
-3. **Run in development**:
-
+3. **Build the project**:
    ```bash
-   pnpm dev
+   pnpm build
    ```
 
-4. **Run tests**:
+4. **Run the agent**:
    ```bash
-   pnpm test
+   pnpm start
+   ```
+
+5. **Test with curl**:
+   ```bash
+   curl -X POST -H "Content-Type: application/json" \
+     -d '{"query": "What are the top meme tokens right now?"}' \
+     http://localhost:3008
    ```
 
 ## Project Structure
 
 ```
-quickstart/
+trendmoon-agent/
 ├── src/
-│   ├── index.ts           # Agent entry point
-│   ├── skills/            # Skill definitions
-│   ├── tools/             # Internal tool implementations
-│   ├── hooks/             # Tool enhancement hooks
-│   └── context/           # Context provider
-├── mock-mcp-servers/      # Mock MCP server implementations
+│   ├── index.ts           # Agent entry point with skill definition
+│   ├── hooks/             # Entity resolution hooks
+│   │   ├── index.ts       # Hook exports
+│   │   └── entityResolutionHook.ts # Main entity resolution logic
+│   ├── services/          # Business logic services
+│   │   └── entityResolver.ts # Caching service for categories/platforms
+│   ├── context/           # Context provider and types
+│   │   ├── provider.ts    # Context initialization
+│   │   └── types.ts       # TypeScript type definitions
+│   ├── utils/             # Utility functions
+│   │   └── timeframeParser.ts # Parse timeframe strings (7d, 1m, etc.)
+│   └── data/              # Fallback data files
+│       ├── categories.json # Crypto categories cache
+│       └── plateforms.json # Blockchain platforms cache
 ├── test/                  # Integration tests
 └── package.json
 ```
 
-## Testing
+## MCP Integration
 
-The integration test suite validates all framework features:
+The agent connects to the Trendmoon MCP server which provides 25+ tools:
 
-```bash
-# Run full integration test
-pnpm test
+### Available Tools
 
-# Test specific endpoints
-curl http://localhost:3002/
-curl http://localhost:3002/.well-known/agent.json
-```
+- **Token Tools**: `searchCoins`, `getCoinDetails`, `getPlatforms`
+- **Social Tools**: `getSocialTrend`, `getProjectSummary`, `searchSocialPosts`
+- **Category Tools**: `getAllCategories`, `getCategoryCoins`, `getTopCategoriesToday`
+- **Analysis Tools**: `getTopNarratives`, `getSocialAndMarketInsights`
+- **Technical Tools**: `getHistoricalPrice`, `checkEMAPosition`
+
+### Prompt Templates
+
+- `detailedTokenAnalysis` - Comprehensive token analysis
+- `topTokensList` - Ranked token lists with filters
+- `tokenCatalysts` - Upcoming events and catalysts
+- `availableFilterOptions` - Current filter options
 
 ## Environment Variables
 
-| Variable             | Description                                 | Required |
-| -------------------- | ------------------------------------------- | -------- |
-| `OPENROUTER_API_KEY` | OpenRouter API key for LLM                  | Yes      |
-| `PORT`               | Server port (default: 3002)                 | No       |
-| `LLM_MODEL`          | LLM model name (default: gpt-4o-2024-08-06) | No       |
-| `LOG_LEVEL`          | Logging level (default: debug)              | No       |
+| Variable               | Description                                    | Required |
+| ---------------------- | ---------------------------------------------- | -------- |
+| `OPENROUTER_API_KEY`   | OpenRouter API key for LLM                   | Yes      |
+| `TRENDMOON_API_KEY`    | Trendmoon API key for market data            | Yes      |
+| `PORT`                 | Server port (default: 3008)                  | No       |
+| `LLM_MODEL`            | LLM model name (default: gemini-2.5-flash)   | No       |
+| `TRENDMOON_API_URL`    | Trendmoon API URL (default: api.trendmoon.io)| No       |
 
-## Developer Notes
+## API Usage
 
-This agent is designed to be:
+### Request Format
 
-- **Feature Complete**: Tests every v2 capability
-- **Minimal**: Simplest possible use of each feature
-- **Self-Contained**: Includes mock MCP servers
-- **Well-Documented**: Clear comments for each feature
+```json
+{
+  "query": "Your natural language question about crypto trends"
+}
+```
 
-Use this as a template for building your own agents!
+### Example Requests
+
+```bash
+# Get trending meme tokens
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"query": "What are the top 10 meme tokens?"}' \
+  http://localhost:3008
+
+# Analyze specific token
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"query": "Analyze BTC social trends over the last week"}' \
+  http://localhost:3008
+
+# Find growing narratives
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"query": "What narrative is growing fastest in crypto?"}' \
+  http://localhost:3008
+```
+
+## Development
+
+### Running in Development
+
+```bash
+pnpm dev
+```
+
+### Running Tests
+
+```bash
+pnpm test
+```
+
+**Note**: Some tests may take longer (up to 2 minutes) when calling `getSocialAndMarketInsights` and similar data-intensive MCP tools. The test timeout is configured for 120 seconds to accommodate these slower operations.
+
+### Building
+
+```bash
+pnpm build
+```
+
+## Architecture
+
+The Trendmoon Agent uses a modern MCP-based architecture:
+
+1. **Query Processing**: Natural language queries are processed by the LLM
+2. **Entity Resolution**: Hooks automatically resolve categories, platforms, and timeframes
+3. **MCP Tool Selection**: LLM selects appropriate tools from the Trendmoon MCP server
+4. **Data Retrieval**: Tools fetch real-time data from Trendmoon API
+5. **Response Generation**: LLM formats the data into human-readable insights
+
+This architecture ensures reliable data access with intelligent caching and fallback mechanisms.

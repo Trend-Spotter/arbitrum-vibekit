@@ -1,63 +1,55 @@
 /**
- * Context Provider for Hello Quickstart Agent
+ * Context Provider for Trendmoon Agent
  * Demonstrates loading context from MCP servers
  */
 
-import type { HelloContext } from './types.js';
+import type { TrendmoonContext } from './types.js';
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { entityResolver } from '../services/entityResolver.js';
 
-export async function contextProvider(deps: { mcpClients: Record<string, Client> }): Promise<HelloContext> {
-  console.error('[Context] Loading context from MCP servers...');
+export async function contextProvider(deps: { mcpClients: Record<string, Client> }): Promise<TrendmoonContext> {
+  console.error('[Context] Loading Trendmoon context from MCP servers...');
 
   const { mcpClients } = deps;
-  let supportedLanguages: string[] = ['en']; // Default fallback
+  let categories: string[] = [];
+  let platforms: string[] = [];
 
-  // Try to load supported languages from the language MCP server
+  // Try to load categories and platforms from the trendmoon MCP server
   try {
-    // Look for the language MCP client
-    const languageClient = Object.entries(mcpClients).find(([name]) => name.includes('language'))?.[1];
+    const trendmoonClient = mcpClients['trendmoon-mcp-server'];
 
-    if (languageClient) {
-      console.error('[Context] Found language MCP client, fetching supported languages...');
+    if (trendmoonClient) {
+      console.error('[Context] Found trendmoon MCP client, initializing entity resolver...');
 
-      const response = await languageClient.callTool({
-        name: 'getSupportedLanguages',
-        arguments: {},
-      });
+      // Initialize the entity resolver with the MCP client
+      await entityResolver.initialize(trendmoonClient);
 
-      // Parse the response
-      if (response.content && Array.isArray(response.content) && response.content.length > 0) {
-        const firstContent = response.content[0];
-        if (firstContent && 'type' in firstContent && firstContent.type === 'text' && 'text' in firstContent) {
-          const data = JSON.parse(firstContent.text);
-          supportedLanguages = data.languages.map((lang: any) => lang.code);
-          console.error(`[Context] Loaded ${supportedLanguages.length} supported languages`);
-        }
-      }
+      // We don't need to manually load categories/platforms here since 
+      // the entityResolver handles caching internally
+      console.error('[Context] Entity resolver initialized successfully');
     } else {
-      console.error('[Context] No language MCP client found, using defaults');
+      console.error('[Context] No trendmoon MCP client found');
     }
   } catch (error) {
-    console.error('[Context] Error loading languages from MCP:', error);
-    // Continue with defaults
+    console.error('[Context] Error initializing entity resolver from MCP:', error);
+    // Continue with empty arrays - the resolver will fall back to local files
   }
 
   // Create the context
-  const context: HelloContext = {
-    defaultLanguage: 'en',
-    supportedLanguages,
-    greetingPrefix: '👋',
+  const context: TrendmoonContext = {
     loadedAt: new Date(),
+    categories,
+    platforms,
     metadata: {
       mcpServersConnected: Object.keys(mcpClients).length,
       environment: process.env.NODE_ENV || 'development',
+      cacheLastUpdated: new Date(),
     },
   };
 
-  console.error('[Context] Context loaded successfully:', {
-    defaultLanguage: context.defaultLanguage,
-    supportedLanguages: context.supportedLanguages.length,
+  console.error('[Context] Trendmoon context loaded successfully:', {
     mcpServersConnected: context.metadata.mcpServersConnected,
+    environment: context.metadata.environment,
   });
 
   return context;

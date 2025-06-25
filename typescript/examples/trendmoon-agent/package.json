@@ -1,7 +1,7 @@
 {
   "name": "trendmoon-agent",
   "version": "1.0.0",
-  "description": "Trendmoon Agent - A comprehensive example demonstrating all v2 framework features",
+  "description": "Trendmoon Agent - Provides insights on social trends and market data for crypto tokens using Trendmoon MCP server",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
@@ -23,8 +23,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
-    "nanoid": "^5.1.5",
-    "zod": "^3.25.67"
+    "nanoid": "^5.0.7",
+    "trendmoon-mcp-server": "workspace:*",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
