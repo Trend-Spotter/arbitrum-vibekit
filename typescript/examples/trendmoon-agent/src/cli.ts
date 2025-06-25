@@ -22,8 +22,7 @@ class AgentMcpClient {
         try {
             // Create SSE transport to the agent
             const transport = new SSEClientTransport(
-                new URL(`${this.baseUrl}/sse`),
-                new URL(`${this.baseUrl}/messages`)
+                new URL(`${this.baseUrl}/sse`)
             );
 
             // Create MCP client
