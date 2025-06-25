@@ -28,22 +28,15 @@ COPY tsconfig.base.json ./
 # 2. Copy all workspace package.json files (to maximise Docker cache)
 # ------------------------------
 COPY lib/ lib/
-COPY templates/quickstart-agent/package.json ./templates/quickstart-agent/
-
-# ------------------------------
-# 3. Install deps based on the copied package.json set. Skip lifecycle scripts for now
-#    because source files are not yet in the build context (they are copied in step 4).
-#    This keeps the layer cache-friendly while avoiding prepare/postinstall failures.
-# ------------------------------
-RUN pnpm install --frozen-lockfile
+COPY examples/trendmoon-agent/packages.json examples/trendmoon-agent/
 
 # ------------------------------
 # 4. Now copy the rest of the source code
 # ------------------------------
 COPY . .
 
-RUN pnpm --filter quickstart-agent... build
-WORKDIR /app/templates/quickstart-agent/dist
+RUN pnpm --filter trendmoon-agent... build
+WORKDIR /app/templates/trendmoon-agent/dist
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]

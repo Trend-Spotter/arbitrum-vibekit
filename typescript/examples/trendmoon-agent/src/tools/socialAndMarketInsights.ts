@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {
     type VibkitToolDefinition,
-    type SuccessTask,
+    type Task,
     withHooks,
     createSuccessTask,
     createErrorTask,
@@ -52,11 +52,39 @@ const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMark
                 arguments: args
             });
 
-            // On extrait le contenu JSON de la réponse du MCP
-            const resultData = JSON.parse(mcpResponse.content[0].text);
+            // Le serveur MCP peut renvoyer plusieurs contenus (structuré + formaté)
+            console.log('[DEBUG] MCP Response:', JSON.stringify(mcpResponse, null, 2));
+            
+            if (!mcpResponse.content || mcpResponse.content.length === 0) {
+                return createErrorTask('mcp-call-error', new VibkitError('ExecutionError', -32603, 'No content in MCP response.'));
+            }
 
-            // On crée une SuccessTask. Le nom 'insights-retrieved' sera utilisé par le hook 'after' pour savoir quel formatage appliquer.
-            return createSuccessTask('insights-retrieved', undefined, resultData);
+            // Chercher le contenu de type texte formaté (généralement le dernier)
+            let formattedText = '';
+            let structuredData = null;
+
+            for (const content of mcpResponse.content) {
+                if (content.type === 'text') {
+                    const text = content.text;
+                    // Si ça commence par { ou [, c'est probablement du JSON
+                    if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+                        try {
+                            structuredData = JSON.parse(text);
+                        } catch (e) {
+                            // Si le parsing échoue, on traite comme du texte
+                            formattedText = text;
+                        }
+                    } else {
+                        // C'est du texte formaté
+                        formattedText = text;
+                    }
+                }
+            }
+
+            // Priorité au texte formaté s'il existe, sinon on utilise les données structurées
+            const finalMessage = formattedText || (structuredData ? formatInsightsResult(structuredData) : 'No readable response from server');
+            
+            return createSuccessTask('insights-retrieved', undefined, finalMessage);
 
         } catch (error) {
             console.error(`[Tool:get_social_and_market_insights] Error during MCP call:`, error);
@@ -65,14 +93,7 @@ const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMark
     },
 };
 
-async function formatInsightsResponseHook(task: SuccessTask): Promise<SuccessTask> {
-    if (task.status.state === 'failed' || !task.result) {
-        // On s'assure qu'il y a un message d'erreur clair et on retourne.
-        task.status.message = task.status.message || "An unknown error occurred during tool execution.";
-        return task;
-    }
-
-    const result = task.result as any;
+function formatInsightsResult(result: any): string {
     let message = "Here is the information I found:";
 
     // On utilise le 'result' qui est le JSON parsé de la réponse du MCP
@@ -104,12 +125,9 @@ async function formatInsightsResponseHook(task: SuccessTask): Promise<SuccessTas
         }
     }
 
-    task.message = message;
-    return task;
+    return message;
 }
 
 export const getSocialAndMarketInsightsTool = withHooks(baseSocialAndMarketInsightsTool, {
     before: entityResolutionHook,
-    // Le hook 'after' s'exécute après un `execute` réussi pour formater la réponse
-//    after: formatInsightsResponseHook,
 });

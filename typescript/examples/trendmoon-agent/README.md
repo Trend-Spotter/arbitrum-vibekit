@@ -65,29 +65,62 @@ The agent includes intelligent entity resolution:
    # TRENDMOON_API_KEY=your_trendmoon_key
    ```
 
-3. **Build the project**:
+3. **Run the agent server**:
    ```bash
-   pnpm build
+   pnpm dev
    ```
 
-4. **Run the agent**:
+4. **Use the CLI (recommended)**:
    ```bash
-   pnpm start
+   # In a new terminal
+   pnpm cli
    ```
 
-5. **Test with curl**:
+5. **Or test with curl**:
    ```bash
    curl -X POST -H "Content-Type: application/json" \
      -d '{"query": "What are the top meme tokens right now?"}' \
-     http://localhost:3008
+     http://localhost:3007
    ```
+
+## Interactive CLI
+
+The agent comes with an interactive CLI for easy testing and exploration:
+
+```bash
+pnpm cli
+```
+
+### CLI Features
+
+- 🔗 **Automatic connection** to the agent via MCP protocol
+- 💬 **Interactive chat interface** for natural language queries
+- 🛠️ **Tool discovery** - shows available tools on startup
+- 📊 **Formatted responses** with proper error handling
+- ❌ **Graceful shutdown** with `exit` command
+
+### CLI Usage Examples
+
+```bash
+❓ Your question: analyze BTC social trends
+❓ Your question: what are the top meme tokens?
+❓ Your question: find growing DeFi projects on arbitrum
+❓ Your question: exit
+```
+
+The CLI automatically:
+- Connects to the agent server on port 3007
+- Displays available tools and capabilities
+- Formats responses for better readability
+- Handles API errors gracefully
 
 ## Project Structure
 
 ```
 trendmoon-agent/
 ├── src/
-│   ├── index.ts           # Agent entry point with skill definition
+│   ├── index.ts           # Agent HTTP server entry point
+│   ├── cli.ts             # Interactive CLI for testing
 │   ├── hooks/             # Entity resolution hooks
 │   │   ├── index.ts       # Hook exports
 │   │   └── entityResolutionHook.ts # Main entity resolution logic
@@ -96,6 +129,9 @@ trendmoon-agent/
 │   ├── context/           # Context provider and types
 │   │   ├── provider.ts    # Context initialization
 │   │   └── types.ts       # TypeScript type definitions
+│   ├── tools/             # Agent tools
+│   │   ├── dummyTool.ts   # Example tool
+│   │   └── socialAndMarketInsights.ts # Main Trendmoon integration
 │   ├── utils/             # Utility functions
 │   │   └── timeframeParser.ts # Parse timeframe strings (7d, 1m, etc.)
 │   └── data/              # Fallback data files
@@ -130,7 +166,7 @@ The agent connects to the Trendmoon MCP server which provides 25+ tools:
 | ---------------------- | ---------------------------------------------- | -------- |
 | `OPENROUTER_API_KEY`   | OpenRouter API key for LLM                   | Yes      |
 | `TRENDMOON_API_KEY`    | Trendmoon API key for market data            | Yes      |
-| `PORT`                 | Server port (default: 3008)                  | No       |
+| `PORT`                 | Server port (default: 3007)                  | No       |
 | `LLM_MODEL`            | LLM model name (default: gemini-2.5-flash)   | No       |
 | `TRENDMOON_API_URL`    | Trendmoon API URL (default: api.trendmoon.io)| No       |
 
@@ -150,26 +186,45 @@ The agent connects to the Trendmoon MCP server which provides 25+ tools:
 # Get trending meme tokens
 curl -X POST -H "Content-Type: application/json" \
   -d '{"query": "What are the top 10 meme tokens?"}' \
-  http://localhost:3008
+  http://localhost:3007
 
 # Analyze specific token
 curl -X POST -H "Content-Type: application/json" \
   -d '{"query": "Analyze BTC social trends over the last week"}' \
-  http://localhost:3008
+  http://localhost:3007
 
 # Find growing narratives
 curl -X POST -H "Content-Type: application/json" \
   -d '{"query": "What narrative is growing fastest in crypto?"}' \
-  http://localhost:3008
+  http://localhost:3007
 ```
 
 ## Development
 
-### Running in Development
+### Available Scripts
 
 ```bash
+# Start agent server in development mode
 pnpm dev
+
+# Start interactive CLI (requires agent server running)
+pnpm cli
+
+# Run tests
+pnpm test
+
+# Build the project
+pnpm build
+
+# Start production server
+pnpm start
 ```
+
+### Development Workflow
+
+1. Start the agent server: `pnpm dev`
+2. In another terminal, start the CLI: `pnpm cli`
+3. Ask questions and test functionality interactively
 
 ### Running Tests
 
@@ -178,12 +233,6 @@ pnpm test
 ```
 
 **Note**: Some tests may take longer (up to 2 minutes) when calling `getSocialAndMarketInsights` and similar data-intensive MCP tools. The test timeout is configured for 120 seconds to accommodate these slower operations.
-
-### Building
-
-```bash
-pnpm build
-```
 
 ## Architecture
 

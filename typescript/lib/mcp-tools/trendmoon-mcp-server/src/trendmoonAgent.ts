@@ -89,7 +89,7 @@ export class TrendmoonAgent {
       const apiKey = process.env.TRENDMOON_API_KEY;
       if (!apiKey) throw new Error('TRENDMOON_API_KEY is required but not set');
 
-      const apiUrl = process.env.TRENDMOON_API_URL ?? 'https://api.trendmoon.io';
+      const apiUrl = process.env.TRENDMOON_API_URL ?? 'https://api.qa.trendmoon.ai';
       const serverName = process.env.TRENDMOON_SERVER_NAME ?? 'trendmoon-mcp-server';
       const debugMode = process.env.DEBUG_MODE ?? 'false';
       const nodeEnv = process.env.NODE_ENV ?? 'development';
