@@ -6,6 +6,7 @@ import { contextProvider } from './context/provider.js';
 import type { TrendmoonContext } from './context/types.js';
 import { getSocialAndMarketInsightsTool } from './tools/socialAndMarketInsights.js';
 import { getAvailableOptionsTool } from './tools/getAvailableOptions.js';
+import { getTopCategoryCoins } from './tools/getTopCategoryCoins.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -23,6 +24,22 @@ You have access to comprehensive market data tools that can:
 - Search and discover tokens by various criteria
 - Track social sentiment and trending keywords
 - Get all available categories/narratives and blockchain platforms for filtering
+- Get top coins from specific categories ranked by any metric (mindshare, sentiment, interactions, scores)
+
+When users ask for "top [metric] [category] coins" or "highest [metric] tokens in [category]", use the get_top_category_coins tool which provides:
+- Real-time social dominance metrics (lc_social_dominance) for mindshare
+- Comprehensive scoring from technical and social analysis
+- Social metrics: mentions, sentiment, interactions, volume
+- Market data: market cap, price changes, volume ratios
+- Optimized batch processing for up to 250 coins per category
+
+Available sorting metrics:
+- lc_social_dominance: Social dominance/mindshare percentage
+- lc_sentiment: Sentiment score (0-1, higher is more positive)
+- lc_interactions: Total social interactions
+- score: Overall platform score
+- social_mentions: Raw mention count
+- market_cap: Market capitalization
 
 When responding to queries:
 1. Use the available MCP tools to gather relevant data
@@ -32,14 +49,12 @@ When responding to queries:
 5. Always base your analysis on the actual data returned from the tools
 6. When users ask about available categories or narratives, use the get_available_options tool to show them the complete list
 
-Available analysis types:
-- 'list' for top tokens with filtering options
+Other analysis types:
+- 'list' for general token filtering with getSocialAndMarketInsights
 - 'detailed_summary' for deep dive analysis on one token  
 - 'catalyst_check' for upcoming events and catalysts
 
-You can filter by narrative (e.g., 'Meme', 'DeFi', 'RWA') and chain (e.g., 'Arbitrum', 'Solana').
-
-IMPORTANT: The system has access to over 625 categories and 86 blockchain platforms. When users ask what narratives or categories are available, use the get_available_options tool to provide them with the complete, up-to-date list.`;
+IMPORTANT: The system has access to over 625 categories and 86 blockchain platforms. When users ask what narratives or categories are available, use the get_available_options tool.`;
 
 // --- Simple input schema - just query ---
 const inputSchema = z.object({
@@ -76,7 +91,7 @@ export const agentConfig: AgentConfig = {
         'Find growing DeFi projects on Arbitrum',
         'What narrative is trending this week?',
       ],
-      tools: [getSocialAndMarketInsightsTool, getAvailableOptionsTool], // Real tool for crypto insights
+      tools: [getSocialAndMarketInsightsTool, getAvailableOptionsTool, getTopCategoryCoins], // Real tools for crypto insights
 
       // Connect to our MCP server to access all Trendmoon tools
       mcpServers: [
