@@ -533,7 +533,7 @@ export class TrendmoonAgent {
 
   // === FORMATTING METHODS ===
   private formatPromptResponse(promptResponse: any, title: string): string {
-    // Affiche le titre en premier
+    // Display title first
     let response = `📊 **${title}**\n\n`;
 
     if (!promptResponse?.messages?.length) {
@@ -541,7 +541,7 @@ export class TrendmoonAgent {
     }
 
     promptResponse.messages.forEach((message: any) => {
-      // Vérifie si le contenu est un objet avec une propriété 'text'
+      // Check if content is an object with a 'text' property
       if (message.content && typeof message.content.text === 'string') {
         response += message.content.text;
       }
