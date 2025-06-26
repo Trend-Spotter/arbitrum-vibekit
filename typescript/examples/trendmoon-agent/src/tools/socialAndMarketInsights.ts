@@ -1,13 +1,12 @@
 import { z } from 'zod';
 import {
     type VibkitToolDefinition,
-    type Task,
     withHooks,
     createSuccessTask,
     createErrorTask,
     VibkitError
 } from 'arbitrum-vibekit-core';
-import { entityResolutionHook } from '../hooks/entityResolutionHook.js';
+import { entityResolutionHook } from '../hooks/index.js';
 
 // Le schéma d'input est le même que celui défini sur le MCP server
 const SocialAndMarketInsightsSchema = z.object({
@@ -55,7 +54,8 @@ const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMark
             // Le serveur MCP peut renvoyer plusieurs contenus (structuré + formaté)
             console.log('[DEBUG] MCP Response:', JSON.stringify(mcpResponse, null, 2));
             
-            if (!mcpResponse.content || mcpResponse.content.length === 0) {
+            const content = mcpResponse.content as any[];
+            if (!content || content.length === 0) {
                 return createErrorTask('mcp-call-error', new VibkitError('ExecutionError', -32603, 'No content in MCP response.'));
             }
 
@@ -63,14 +63,14 @@ const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMark
             let formattedText = '';
             let structuredData = null;
 
-            for (const content of mcpResponse.content) {
-                if (content.type === 'text') {
-                    const text = content.text;
+            for (const contentItem of content) {
+                if (contentItem.type === 'text') {
+                    const text = contentItem.text;
                     // Si ça commence par { ou [, c'est probablement du JSON
                     if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
                         try {
                             structuredData = JSON.parse(text);
-                        } catch (e) {
+                        } catch {
                             // Si le parsing échoue, on traite comme du texte
                             formattedText = text;
                         }

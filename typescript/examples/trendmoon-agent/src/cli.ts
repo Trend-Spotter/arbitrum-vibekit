@@ -9,8 +9,12 @@ import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import * as readline from 'readline';
 
 class AgentMcpClient {
-    private client: Client | null = null;
+    private _client: Client | null = null;
     private baseUrl: string;
+
+    get client(): Client | null {
+        return this._client;
+    }
 
     constructor(port: number) {
         this.baseUrl = `http://localhost:${port}`;
@@ -26,7 +30,7 @@ class AgentMcpClient {
             );
 
             // Create MCP client
-            this.client = new Client({
+            this._client = new Client({
                 name: 'trendmoon-cli',
                 version: '1.0.0'
             }, {
@@ -34,16 +38,17 @@ class AgentMcpClient {
             });
 
             // Connect to the agent
-            await this.client.connect(transport);
+            await this._client.connect(transport);
             console.log('✅ Connected to agent via MCP');
 
             // List available tools
-            const tools = await this.client.listTools();
+            const tools = await this._client.listTools();
             console.log(`🛠️  Found ${tools.tools.length} available tools:`);
             tools.tools.forEach(tool => {
                 console.log(`   - ${tool.name}: ${tool.description}`);
             });
             console.log();
+
 
         } catch (error) {
             console.error('❌ Failed to connect via MCP:', error);
@@ -52,7 +57,7 @@ class AgentMcpClient {
     }
 
     async callTool(toolName: string, args: any): Promise<any> {
-        if (!this.client) {
+        if (!this._client) {
             throw new Error('Client not connected. Call connect() first.');
         }
 
@@ -60,7 +65,7 @@ class AgentMcpClient {
             console.log(`🔧 Calling tool: ${toolName}`);
             console.log(`📝 Arguments:`, JSON.stringify(args, null, 2));
             
-            const result = await this.client.callTool({
+            const result = await this._client.callTool({
                 name: toolName,
                 arguments: args
             });
@@ -73,9 +78,9 @@ class AgentMcpClient {
     }
 
     async disconnect(): Promise<void> {
-        if (this.client) {
-            await this.client.close();
-            this.client = null;
+        if (this._client) {
+            await this._client.close();
+            this._client = null;
         }
     }
 }
@@ -123,7 +128,7 @@ async function runCLI() {
             try {
                 console.log('\n🤖 Processing...\n');
                 
-                // Call the trendmoon-insights tool directly
+                // Call the trendmoon-insights tool via the agent (simpler approach)
                 const result = await mcpClient.callTool('trendmoon-insights', {
                     query: query
                 });
@@ -131,19 +136,23 @@ async function runCLI() {
                 console.log('📊 Response:');
                 console.log('─'.repeat(50));
                 
-                // Extract the formatted message from the MCP response
+                // Extract the formatted message from the agent response
                 let displayMessage = '';
                 
-                // Try to extract from the new structure: result.content[0].resource.text
+                // Try to extract from the agent response structure
                 if (result.content && result.content.length > 0) {
                     for (const content of result.content) {
                         if (content.type === 'resource' && content.resource?.text) {
                             try {
                                 const parsed = JSON.parse(content.resource.text);
                                 
-                                // Extract the formatted message from the task structure
+                                // Extract the formatted message from various structures
                                 if (parsed.status?.message?.parts?.[0]?.text) {
                                     displayMessage = parsed.status.message.parts[0].text;
+                                    break;
+                                } else if (parsed.parts?.[0]?.text) {
+                                    // New structure: parts[0].text
+                                    displayMessage = parsed.parts[0].text;
                                     break;
                                 } else if (parsed.message) {
                                     displayMessage = parsed.message;
@@ -167,6 +176,8 @@ async function runCLI() {
                         const parsed = JSON.parse(result.resource.text);
                         if (parsed.status?.message?.parts?.[0]?.text) {
                             displayMessage = parsed.status.message.parts[0].text;
+                        } else if (parsed.parts?.[0]?.text) {
+                            displayMessage = parsed.parts[0].text;
                         } else if (parsed.message) {
                             displayMessage = parsed.message;
                         }

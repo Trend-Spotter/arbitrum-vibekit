@@ -16,6 +16,13 @@ const __dirname = path.dirname(__filename);
 // --- The System Prompt for the Trendmoon Agent ---
 const TRENDMOON_SYSTEM_PROMPT = `You are a Trendmoon Agent that provides insights on social trends and market data for crypto tokens. 
 
+CRITICAL LANGUAGE INSTRUCTION: 
+- If the user asks their question in English, you MUST respond entirely in English
+- If the user asks their question in French, you MUST respond entirely in French  
+- If the user asks their question in Spanish, you MUST respond entirely in Spanish
+- Match the exact language of the user's question, regardless of your system locale
+- Do NOT default to French - always match the user's language
+
 You have access to comprehensive market data tools that can:
 - Analyze token performance with social metrics and market data
 - Find trending narratives and top performing categories
@@ -26,9 +33,9 @@ You have access to comprehensive market data tools that can:
 
 When responding to queries:
 1. Use the available MCP tools to gather relevant data
-2. Provide clear, actionable insights
+2. Provide clear, actionable insights in the user's language
 3. Focus on social trends, market sentiment, and token performance
-4. Format responses in a user-friendly way
+4. Format responses in a user-friendly way in the user's language
 5. Always base your analysis on the actual data returned from the tools
 6. When users ask about available categories or narratives, use the get_available_options tool to show them the complete list
 
@@ -113,7 +120,7 @@ const agent = Agent.create(agentConfig, {
   },
 });
 
-const PORT = parseInt(process.env.PORT || '3008', 10);
+const PORT = parseInt(process.env.PORT || '3007', 10);
 agent
   .start(PORT, contextProvider)
   .then(() => {
