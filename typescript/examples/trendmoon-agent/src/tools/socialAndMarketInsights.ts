@@ -54,8 +54,7 @@ const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMark
             // Le serveur MCP peut renvoyer plusieurs contenus (structuré + formaté)
             console.log('[DEBUG] MCP Response:', JSON.stringify(mcpResponse, null, 2));
             
-            const content = mcpResponse.content as any[];
-            if (!content || content.length === 0) {
+            if (!mcpResponse.content || !Array.isArray(mcpResponse.content) || mcpResponse.content.length === 0) {
                 return createErrorTask('mcp-call-error', new VibkitError('ExecutionError', -32603, 'No content in MCP response.'));
             }
 
