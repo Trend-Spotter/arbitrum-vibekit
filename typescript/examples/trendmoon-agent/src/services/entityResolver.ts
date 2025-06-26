@@ -53,7 +53,7 @@ class EntityResolver {
     const cacheDurationMinutes = parseInt(process.env.ENTITY_CACHE_DURATION_MINUTES || '60', 10);
     const cacheDurationMs = cacheDurationMinutes * 60 * 1000;
 
-    if (this.isInitialized && (Date.now() - this.lastCacheTime < cacheDurationMs)) {
+    if (this.isInitialized && Date.now() - this.lastCacheTime < cacheDurationMs) {
       return;
     }
 
@@ -63,22 +63,56 @@ class EntityResolver {
       // ÉTAPE 1 : On essaie de récupérer les données fraîches depuis le serveur MCP
       console.log('[EntityResolver] Attempting to fetch fresh data from MCP server...');
       const [categoriesRes, platformsRes] = await Promise.all([
-        mcpClient.request({
-          method: 'tools/call',
-          params: { name: 'getAllCategories', arguments: {} }
+        mcpClient.callTool({
+          name: 'getAllCategories',
+          arguments: {},
         }),
-        mcpClient.request({
-          method: 'tools/call',
-          params: { name: 'getPlatforms', arguments: {} }
-        })
+        mcpClient.callTool({
+          name: 'getPlatforms',
+          arguments: {},
+        }),
       ]);
 
-      const categoryNames = JSON.parse((categoriesRes.content as any)?.[0]?.text || '[]');
-      const platformNames = JSON.parse((platformsRes.content as any)?.[0]?.text || '[]');
+      // Debug: Log the actual response structures
+      console.log('[EntityResolver] Categories response structure:', JSON.stringify(categoriesRes, null, 2));
+      console.log('[EntityResolver] Platforms response structure:', JSON.stringify(platformsRes, null, 2));
+
+      // Parse the response content properly
+      let categoryNames: string[] = [];
+      let platformNames: string[] = [];
+
+      // Extract categories from response
+      if (categoriesRes.content && categoriesRes.content.length > 0) {
+        const categoryContent = categoriesRes.content[0];
+        if (categoryContent.type === 'text') {
+          try {
+            categoryNames = JSON.parse(categoryContent.text);
+          } catch (e) {
+            console.warn('[EntityResolver] Failed to parse categories response as JSON:', categoryContent.text);
+          }
+        }
+      }
+
+      // Extract platforms from response
+      if (platformsRes.content && platformsRes.content.length > 0) {
+        // First try to get from structuredContent (new format)
+        if (platformsRes.structuredContent && platformsRes.structuredContent.platforms) {
+          platformNames = platformsRes.structuredContent.platforms;
+        } else {
+          // Fallback to parsing text content (old format)
+          const platformContent = platformsRes.content[0];
+          if (platformContent.type === 'text') {
+            try {
+              platformNames = JSON.parse(platformContent.text);
+            } catch (e) {
+              console.warn('[EntityResolver] Failed to parse platforms response as JSON:', platformContent.text);
+            }
+          }
+        }
+      }
 
       this.populateCache(categoryNames, platformNames);
       console.log(`[EntityResolver] Successfully loaded cache from MCP server.`);
-
     } catch (mcpError) {
       // ÉTAPE 2 : Échec du serveur MCP, on utilise les fichiers JSON locaux comme fallback
       const errorMessage = mcpError instanceof Error ? mcpError.message : String(mcpError);
@@ -91,7 +125,7 @@ class EntityResolver {
 
         const [categoriesBuffer, platformsBuffer] = await Promise.all([
           fs.readFile(categoriesPath, 'utf-8'),
-          fs.readFile(platformsPath, 'utf-8')
+          fs.readFile(platformsPath, 'utf-8'),
         ]);
 
         const categoryNames = JSON.parse(categoriesBuffer);
@@ -99,7 +133,6 @@ class EntityResolver {
 
         this.populateCache(categoryNames, platformNames);
         console.log(`[EntityResolver] Successfully loaded cache from local files.`);
-
       } catch (fallbackError) {
         const errorMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
         console.error('[EntityResolver] CRITICAL: Failed to load from both MCP server and local files.', errorMessage);
@@ -110,34 +143,38 @@ class EntityResolver {
 
   // Fonction privée pour peupler le cache, évite la duplication de code
   private populateCache(categoryNames: string[], platformNames: string[]) {
-    this.categories = categoryNames.map(name => ({
+    this.categories = categoryNames.map((name) => ({
       id: name.toLowerCase().replace(/\s+/g, '-'),
       name: name,
-      aliases: generateAliases(name)
+      aliases: generateAliases(name),
     }));
 
-    this.platforms = platformNames.map(name => ({
+    this.platforms = platformNames.map((name) => ({
       id: name,
       name: name,
-      aliases: [name.toLowerCase()]
+      aliases: [name.toLowerCase()],
     }));
 
     this.isInitialized = true;
     this.lastCacheTime = Date.now();
-    console.log(`[EntityResolver] Cache populated with ${this.categories.length} categories and ${this.platforms.length} platforms.`);
+    console.log(
+      `[EntityResolver] Cache populated with ${this.categories.length} categories and ${this.platforms.length} platforms.`,
+    );
   }
 
   public resolveCategory(alias: string): string | null {
     if (!alias) return null;
     const searchTerm = alias.toLowerCase().trim();
-    const found = this.categories.find(cat => cat.aliases.includes(searchTerm));
+    const found = this.categories.find((cat) => cat.aliases.includes(searchTerm));
     return found ? found.name : null;
   }
 
   public resolvePlatform(alias: string): string | null {
     if (!alias) return null;
     const searchTerm = alias.toLowerCase().trim();
-    const found = this.platforms.find(plat => plat.aliases.includes(searchTerm) || plat.name.toLowerCase().includes(searchTerm));
+    const found = this.platforms.find(
+      (plat) => plat.aliases.includes(searchTerm) || plat.name.toLowerCase().includes(searchTerm),
+    );
     return found ? found.name : null;
   }
 }
