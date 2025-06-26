@@ -5,8 +5,10 @@ import {
   createSuccessTask,
   createErrorTask,
   VibkitError,
+  withHooks,
 } from 'arbitrum-vibekit-core';
 import { entityResolver } from '../services/entityResolver.js';
+import { entityResolutionHook } from '../hooks/index.js';
 import type { TrendmoonContext } from '../context/types.js';
 
 const GetAvailableOptionsSchema = z.object({
@@ -16,7 +18,7 @@ const GetAvailableOptionsSchema = z.object({
     .describe('What type of options to retrieve: categories (narratives), platforms (chains), or both.'),
 });
 
-export const getAvailableOptionsTool: VibkitToolDefinition<typeof GetAvailableOptionsSchema> = {
+const baseGetAvailableOptionsTool: VibkitToolDefinition<typeof GetAvailableOptionsSchema> = {
   name: 'get_available_options',
   description:
     'Get all available categories (narratives) and blockchain platforms that can be used for filtering crypto analysis. Use this when users ask what categories or chains are available.',
@@ -89,3 +91,7 @@ export const getAvailableOptionsTool: VibkitToolDefinition<typeof GetAvailableOp
     }
   },
 };
+
+export const getAvailableOptionsTool = withHooks(baseGetAvailableOptionsTool, {
+  before: entityResolutionHook,
+});
