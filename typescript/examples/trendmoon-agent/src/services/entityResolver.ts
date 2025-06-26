@@ -73,10 +73,6 @@ class EntityResolver {
         }),
       ]);
 
-      // Debug: Log the actual response structures
-      console.log('[EntityResolver] Categories response structure:', JSON.stringify(categoriesRes, null, 2));
-      console.log('[EntityResolver] Platforms response structure:', JSON.stringify(platformsRes, null, 2));
-
       // Parse the response content properly
       let categoryNames: string[] = [];
       let platformNames: string[] = [];
@@ -176,6 +172,36 @@ class EntityResolver {
       (plat) => plat.aliases.includes(searchTerm) || plat.name.toLowerCase().includes(searchTerm),
     );
     return found ? found.name : null;
+  }
+
+  /**
+   * Get all available category names
+   * @returns Array of category names
+   */
+  public getAvailableCategories(): string[] {
+    return this.categories.map((cat) => cat.name);
+  }
+
+  /**
+   * Get all available platform names
+   * @returns Array of platform names
+   */
+  public getAvailablePlatforms(): string[] {
+    return this.platforms.map((plat) => plat.name);
+  }
+
+  /**
+   * Get cache statistics
+   * @returns Object with cache info
+   */
+  public getCacheInfo() {
+    return {
+      isInitialized: this.isInitialized,
+      categoriesCount: this.categories.length,
+      platformsCount: this.platforms.length,
+      lastCacheTime: this.lastCacheTime,
+      cacheAge: Date.now() - this.lastCacheTime,
+    };
   }
 }
 
