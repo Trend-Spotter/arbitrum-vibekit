@@ -443,7 +443,7 @@ describe('Trendmoon Agent - Crypto Market Data Integration Tests', () => {
     });
 
     test('Platforms data file exists', async () => {
-      const platformsPath = path.join(process.cwd(), 'src', 'data', 'plateforms.json');
+      const platformsPath = path.join(process.cwd(), 'src', 'data', 'platforms.json');
       try {
         await fs.access(platformsPath);
         const content = await fs.readFile(platformsPath, 'utf-8');
