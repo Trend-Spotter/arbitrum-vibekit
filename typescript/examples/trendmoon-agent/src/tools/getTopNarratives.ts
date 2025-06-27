@@ -49,11 +49,21 @@ const baseGetTopNarratives: VibkitToolDefinition<typeof GetTopNarrativesSchema> 
     }
 
     try {
-      console.log(`[Tool:get_top_narratives] Calling MCP with time_period: ${args.time_period}, sort_by: ${args.sort_by}, limit: ${args.limit}`);
+      console.log(`[Tool:get_top_narratives] Calling MCP with parameters:`, {
+        time_period: args.time_period,
+        sort_by: args.sort_by,
+        sort_order: args.sort_order,
+        limit: args.limit
+      });
 
       const mcpResponse = await mcpClient.callTool({
         name: 'getTopNarratives',
-        arguments: args
+        arguments: {
+          time_period: args.time_period,
+          limit: args.limit,
+          sort_by: args.sort_by,
+          sort_order: args.sort_order
+        }
       });
 
       console.log('[DEBUG] MCP Response:', JSON.stringify(mcpResponse, null, 2));
