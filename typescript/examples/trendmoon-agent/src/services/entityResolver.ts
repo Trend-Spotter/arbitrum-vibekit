@@ -217,8 +217,8 @@ class EntityResolver {
         mcpClient.callTool({ name: 'getPlatforms', arguments: {} }),
       ]);
 
-      console.log('[EntityResolver] Categories response:', JSON.stringify(categoriesRes, null, 2));
-      console.log('[EntityResolver] Platforms response:', JSON.stringify(platformsRes, null, 2));
+      // console.log('[EntityResolver] Categories response:', JSON.stringify(categoriesRes, null, 2));
+      // console.log('[EntityResolver] Platforms response:', JSON.stringify(platformsRes, null, 2));
 
       const categoryNames = JSON.parse(categoriesRes.content[0].text);
       
@@ -467,19 +467,19 @@ class EntityResolver {
     console.log(`[EntityResolver] Search term: '${searchTerm}'`);
 
     // Check exact match first in local cache
-    const exactMatch = this.tokensMap.get(searchTerm);
-    if (exactMatch) {
-      console.log(`[EntityResolver] Exact match found in cache for '${searchTerm}': '${exactMatch}'`);
-      return exactMatch;
-    }
-    console.log(`[EntityResolver] No exact match in cache for '${searchTerm}'.`);
+    // const exactMatch = this.tokensMap.get(searchTerm);
+    // if (exactMatch) {
+    //   console.log(`[EntityResolver] Exact match found in cache for '${searchTerm}': '${exactMatch}'`);
+    //   return exactMatch;
+    // }
+    // console.log(`[EntityResolver] No exact match in cache for '${searchTerm}'.`);
 
     // If not found in cache, try to fetch from MCP using searchCoins
     try {
       console.log(`[EntityResolver] Attempting to fetch token '${searchTerm}' from MCP using searchCoins...`);
       const mcpResponse = await mcpClient.callTool({
         name: 'searchCoins',
-        arguments: { query: searchTerm }
+        arguments: { query: searchTerm, offset: 0, limit: 1,  orderBy: 'market_cap', orderDirection: "desc"}
       });
 
       if (mcpResponse.structuredContent && mcpResponse.structuredContent.coins && mcpResponse.structuredContent.coins.length > 0) {
