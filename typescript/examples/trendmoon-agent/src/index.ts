@@ -7,6 +7,7 @@ import type { TrendmoonContext } from './context/types.js';
 import { getSocialAndMarketInsightsTool } from './tools/socialAndMarketInsights.js';
 import { getAvailableOptionsTool } from './tools/getAvailableOptions.js';
 import { getTopCategoryCoins } from './tools/getTopCategoryCoins.js';
+import { getTopNarratives } from './tools/getTopNarratives.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -97,8 +98,9 @@ export const agentConfig: AgentConfig = {
         'Analyze BTC social trends',
         'Find growing DeFi projects on Arbitrum',
         'What narrative is trending this week?',
+        'what are the top narratives right now by mindshare growth?',
       ],
-      tools: [getSocialAndMarketInsightsTool, getAvailableOptionsTool, getTopCategoryCoins], // Real tools for crypto insights
+      tools: [getSocialAndMarketInsightsTool, getAvailableOptionsTool, getTopCategoryCoins, getTopNarratives], // Real tools for crypto insights
 
       // Connect to our MCP server to access all Trendmoon tools
       mcpServers: [
