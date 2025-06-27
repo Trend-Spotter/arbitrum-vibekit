@@ -4,7 +4,9 @@ import {
   createSuccessTask,
   createErrorTask,
   VibkitError,
+  withHooks,
 } from 'arbitrum-vibekit-core';
+import { entityResolutionHook } from '../hooks/index.js';
 
 const GetTopCategoryCoinsSchema = z.object({
   category_name: z.string().describe('Category name (e.g., Meme, DeFi, RWA)'),
@@ -18,7 +20,7 @@ const GetTopCategoryCoinsSchema = z.object({
   max_coins_to_analyze: z.number().min(10).max(250).default(200).describe('Max coins to analyze (10-250)')
 });
 
-export const getTopCategoryCoins: VibkitToolDefinition<typeof GetTopCategoryCoinsSchema> = {
+const baseGetTopCategoryCoins: VibkitToolDefinition<typeof GetTopCategoryCoinsSchema> = {
   name: 'get_top_category_coins',
   description: 'Get top coins from a specific category sorted by any metric including mindshare (social dominance), sentiment, interactions, or technical scores. Perfect for queries like "top mindshare meme coins" or "highest sentiment DeFi tokens".',
   parameters: GetTopCategoryCoinsSchema,
@@ -64,4 +66,8 @@ export const getTopCategoryCoins: VibkitToolDefinition<typeof GetTopCategoryCoin
       return createErrorTask('mcp-call-error', new VibkitError('ExecutionError', -32603, 'Failed to get top category coins from the Trendmoon MCP server.'));
     }
   },
-}; 
+};
+
+export const getTopCategoryCoins = withHooks(baseGetTopCategoryCoins, {
+  before: entityResolutionHook,
+}); 

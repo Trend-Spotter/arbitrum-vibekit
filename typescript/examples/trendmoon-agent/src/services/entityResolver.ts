@@ -69,6 +69,93 @@ function generateAliases(name: string): string[] {
   return Array.from(aliases);
 }
 
+function generateTokenAliases(tokenName: string): string[] {
+  const aliases = new Set<string>();
+  const lowerCaseName = tokenName.toLowerCase();
+
+  aliases.add(lowerCaseName);
+
+  // Add common symbols and variations
+  const commonTokenMappings: Record<string, string[]> = {
+    'ethereum': ['eth'],
+    'bitcoin': ['btc'],
+    'solana': ['sol'],
+    'cardano': ['ada'],
+    'binancecoin': ['bnb'],
+    'dogecoin': ['doge'],
+    'shiba-inu': ['shib'],
+    'arbitrum': ['arb'],
+    'optimism': ['op'],
+    'polygon': ['matic'],
+    'avalanche-2': ['avax'],
+    'chainlink': ['link'],
+    'uniswap': ['uni'],
+    'litecoin': ['ltc'],
+    'ripple': ['xrp'],
+    'polkadot': ['dot'],
+    'tron': ['trx'],
+    'near-protocol': ['near'],
+    'cosmos': ['atom'],
+    'internet-computer': ['icp'],
+    'vechain': ['vet'],
+    'filecoin': ['fil'],
+    'elrond-erd-2': ['egld'],
+    'tezos': ['xtz'],
+    'monero': ['xmr'],
+    'ethereum-classic': ['etc'],
+    'stellar': ['xlm'],
+    'eos': ['eos'],
+    'iota': ['miota'],
+    'dash': ['dash'],
+    'zcash': ['zec'],
+    'maker': ['mkr'],
+    'aave': ['aave'],
+    'compound': ['comp'],
+    'sushi': ['sushi'],
+    'curve-dao-token': ['crv'],
+    'decentraland': ['mana'],
+    'the-sandbox': ['sand'],
+    'axie-infinity': ['axs'],
+    'gala': ['gala'],
+    'immutable-x': ['imx'],
+    'render-token': ['rndr'],
+    'fetch-ai': ['fet'],
+    'ocean-protocol': ['ocean'],
+    'singularitynet': ['agix'],
+    'injective-protocol': ['inj'],
+    'celestia': ['tia'],
+    'sui': ['sui'],
+    'aptos': ['apt'],
+    'pepe': ['pepe'],
+    'floki': ['floki'],
+    'bonk': ['bonk'],
+    'dogwifhat': ['wif'],
+    'book-of-meme': ['bome'],
+    'cat-in-a-dogs-world': ['mew'],
+    'slerf': ['slerf'],
+    'popcat': ['popcat'],
+    'wif-hat': ['wif'],
+    'magacoin': ['maga'],
+    'jeo-boden': ['boden'],
+    'delysium': ['agix'], // Example of a token with a common alias that might be ambiguous
+  };
+
+  const nameKey = lowerCaseName;
+  if (commonTokenMappings[nameKey]) {
+    commonTokenMappings[nameKey].forEach(alias => aliases.add(alias));
+  }
+
+  // Add symbol if it's different from the name
+  if (tokenName.includes('(') && tokenName.includes(')')) {
+    const symbolMatch = tokenName.match(/\(([^)]+)\)/);
+    if (symbolMatch && symbolMatch[1]) {
+      aliases.add(symbolMatch[1].toLowerCase());
+    }
+  }
+
+  return Array.from(aliases);
+}
+
 const projectRoot = process.cwd();
 const CACHE_DIR = path.join(projectRoot, 'cache');
 const FALLBACK_DIR = path.join(projectRoot, 'src/data');
@@ -77,8 +164,10 @@ class EntityResolver {
   private static instance: EntityResolver;
   private categories: CanonicalEntity[] = [];
   private platforms: CanonicalEntity[] = [];
+  private tokens: CanonicalEntity[] = [];
   private categoriesMap: Map<string, string> = new Map();
   private platformsMap: Map<string, string> = new Map();
+  private tokensMap: Map<string, string> = new Map();
   private isInitialized = false;
   private lastMemoryCacheTime: number = 0;
 
@@ -214,8 +303,79 @@ class EntityResolver {
       aliases: this.generatePlatformAliases(name)
     }));
 
+    // Static list of common tokens with their canonical IDs (e.g., CoinGecko IDs)
+    const commonTokens = [
+      { id: 'eth', name: 'Ethereum', aliases: ['ethereum'] },
+      { id: 'btc', name: 'Bitcoin', aliases: ['bitcoin'] },
+      { id: 'sol', name: 'Solana', aliases: ['solana'] },
+      { id: 'doge', name: 'Dogecoin', aliases: ['dogecoin'] },
+      { id: 'shib', name: 'Shiba Inu', aliases: ['shiba-inu'] },
+      { id: 'arb', name: 'Arbitrum', aliases: ['arbitrum'] },
+      { id: 'op', name: 'Optimism', aliases: ['optimism'] },
+      { id: 'matic', name: 'Polygon', aliases: ['polygon'] },
+      { id: 'avax', name: 'Avalanche', aliases: ['avalanche-2'] },
+      { id: 'bnb', name: 'Binance Coin', aliases: ['binancecoin'] },
+      { id: 'ada', name: 'Cardano', aliases: ['cardano'] },
+      { id: 'xrp', name: 'XRP', aliases: ['ripple'] },
+      { id: 'link', name: 'Chainlink', aliases: ['chainlink'] },
+      { id: 'uni', name: 'Uniswap', aliases: ['uniswap'] },
+      { id: 'ltc', name: 'Litecoin', aliases: ['litecoin'] },
+      { id: 'dot', name: 'Polkadot', aliases: ['polkadot'] },
+      { id: 'trx', name: 'TRON', aliases: ['tron'] },
+      { id: 'near', name: 'NEAR Protocol', aliases: ['near-protocol'] },
+      { id: 'atom', name: 'Cosmos', aliases: ['cosmos'] },
+      { id: 'icp', name: 'Internet Computer', aliases: ['internet-computer'] },
+      { id: 'vet', name: 'VeChain', aliases: ['vechain'] },
+      { id: 'fil', name: 'Filecoin', aliases: ['filecoin'] },
+      { id: 'egld', name: 'Elrond', aliases: ['elrond-erd-2'] },
+      { id: 'xtz', name: 'Tezos', aliases: ['tezos'] },
+      { id: 'xmr', name: 'Monero', aliases: ['monero'] },
+      { id: 'etc', name: 'Ethereum Classic', aliases: ['ethereum-classic'] },
+      { id: 'xlm', name: 'Stellar', aliases: ['stellar'] },
+      { id: 'eos', name: 'EOS', aliases: ['eos'] },
+      { id: 'miota', name: 'IOTA', aliases: ['iota'] },
+      { id: 'dash', name: 'Dash', aliases: ['dash'] },
+      { id: 'zec', name: 'Zcash', aliases: ['zcash'] },
+      { id: 'mkr', name: 'Maker', aliases: ['maker'] },
+      { id: 'aave', name: 'Aave', aliases: ['aave'] },
+      { id: 'comp', name: 'Compound', aliases: ['compound'] },
+      { id: 'sushi', name: 'Sushi', aliases: ['sushi'] },
+      { id: 'crv', name: 'Curve DAO Token', aliases: ['curve-dao-token'] },
+      { id: 'mana', name: 'Decentraland', aliases: ['decentraland'] },
+      { id: 'sand', name: 'The Sandbox', aliases: ['the-sandbox'] },
+      { id: 'axs', name: 'Axie Infinity', aliases: ['axie-infinity'] },
+      { id: 'gala', name: 'Gala', aliases: ['gala'] },
+      { id: 'imx', name: 'Immutable X', aliases: ['immutable-x'] },
+      { id: 'rndr', name: 'Render Token', aliases: ['render-token'] },
+      { id: 'fet', name: 'Fetch.ai', aliases: ['fetch-ai'] },
+      { id: 'ocean', name: 'Ocean Protocol', aliases: ['ocean-protocol'] },
+      { id: 'agix', name: 'SingularityNET', aliases: ['singularitynet'] },
+      { id: 'inj', name: 'Injective Protocol', aliases: ['injective-protocol'] },
+      { id: 'tia', name: 'Celestia', aliases: ['celestia'] },
+      { id: 'sui', name: 'Sui', aliases: ['sui'] },
+      { id: 'apt', name: 'Aptos', aliases: ['aptos'] },
+      { id: 'pepe', name: 'Pepe', aliases: ['pepe'] },
+      { id: 'floki', name: 'Floki', aliases: ['floki'] },
+      { id: 'bonk', name: 'Bonk', aliases: ['bonk'] },
+      { id: 'wif', name: 'dogwifhat', aliases: ['dogwifhat'] },
+      { id: 'bome', name: 'Book of Meme', aliases: ['book-of-meme'] },
+      { id: 'mew', name: 'Cat in a Dogs World', aliases: ['cat-in-a-dogs-world'] },
+      { id: 'slerf', name: 'Slerf', aliases: ['slerf'] },
+      { id: 'popcat', name: 'Popcat', aliases: ['popcat'] },
+      { id: 'wif', name: 'WIF Hat', aliases: ['wif-hat'] },
+      { id: 'maga', name: 'MAGA Coin', aliases: ['magacoin'] },
+      { id: 'boden', name: 'Jeo Boden', aliases: ['jeo-boden'] },
+    ];
+
+    this.tokens = commonTokens.map(token => ({
+      id: token.id,
+      name: token.name,
+      aliases: generateTokenAliases(token.name).concat(token.aliases)
+    }));
+
     this.categoriesMap.clear();
     this.platformsMap.clear();
+    this.tokensMap.clear();
 
     for (const cat of this.categories) {
       for (const alias of cat.aliases) {
@@ -229,9 +389,15 @@ class EntityResolver {
       }
     }
 
+    for (const token of this.tokens) {
+      for (const alias of token.aliases) {
+        this.tokensMap.set(alias, token.id);
+      }
+    }
+
     this.isInitialized = true;
     this.lastMemoryCacheTime = Date.now();
-    console.log(`[EntityResolver] Memory cache populated with ${this.categories.length} categories and ${this.platforms.length} platforms.`);
+    console.log(`[EntityResolver] Memory cache populated with ${this.categories.length} categories, ${this.platforms.length} platforms, and ${this.tokens.length} tokens.`);
   }
 
   private async writeCacheToDisk(categories: string[], platforms: string[]) {
@@ -328,7 +494,7 @@ class EntityResolver {
     if (exactMatch) return exactMatch;
     
     // Handle ambiguous cases: prefer platform over token symbol
-    const ambiguousTerms = {
+    const ambiguousTerms: Record<string, string | null> = {
       'sol': 'solana', // SOL token vs Solana platform
       'avax': 'avalanche', // AVAX token vs Avalanche platform  
       'matic': 'polygon-pos', // MATIC token vs Polygon platform
@@ -342,9 +508,11 @@ class EntityResolver {
       'near': 'near-protocol', // NEAR token vs NEAR platform
     };
     
-    if (ambiguousTerms.hasOwnProperty(searchTerm)) {
-      const platformName = ambiguousTerms[searchTerm as keyof typeof ambiguousTerms];
-      return platformName;
+    if (searchTerm in ambiguousTerms) {
+      const platformName = ambiguousTerms[searchTerm];
+      if (platformName !== null) {
+        return platformName!;
+      }
     }
     
     // Standard partial matching
@@ -354,6 +522,35 @@ class EntityResolver {
       }
     }
     
+    return null;
+  }
+
+  public resolveToken(alias: string): string | null {
+    console.log(`[EntityResolver] Attempting to resolve token alias: '${alias}'`);
+    if (!alias) {
+      console.log('[EntityResolver] Alias is empty.');
+      return null;
+    }
+    const searchTerm = alias.toLowerCase().trim();
+    console.log(`[EntityResolver] Search term: '${searchTerm}'`);
+
+    // Check exact match first
+    const exactMatch = this.tokensMap.get(searchTerm);
+    if (exactMatch) {
+      console.log(`[EntityResolver] Exact match found for '${searchTerm}': '${exactMatch}'`);
+      return exactMatch;
+    }
+    console.log(`[EntityResolver] No exact match for '${searchTerm}'.`);
+
+    // Standard partial matching
+    for (const [key, value] of this.tokensMap) {
+      if (key.includes(searchTerm) || searchTerm.includes(key)) {
+        console.log(`[EntityResolver] Partial match found: key='${key}', value='${value}' for search term '${searchTerm}'`);
+        return value;
+      }
+    }
+    console.log(`[EntityResolver] No partial match found for '${searchTerm}'.`);
+
     return null;
   }
 

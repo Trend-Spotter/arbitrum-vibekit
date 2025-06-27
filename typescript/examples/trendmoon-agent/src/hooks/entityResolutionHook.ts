@@ -12,13 +12,20 @@ export const entityResolutionHook: HookFunction<any, any, TrendmoonContext, any>
 
     await entityResolver.initialize(mcpClient);
 
-    if (args.narrative) {
-        const resolvedCategory = entityResolver.resolveCategory(args.narrative);
+    if (args.narrative || args.category_name) {
+        const cat = args.narrative || args.category_name;
+        const resolvedCategory = entityResolver.resolveCategory(cat);
         if (!resolvedCategory) {
-            throw new VibkitError('ValidationError', -32602, `Sorry, I don't recognize the category "${args.narrative}". Please try another one.`);
+            throw new VibkitError('ValidationError', -32602, `Sorry, I don't recognize the category "${cat}". Please try another one.`);
         }
         //console.log(`[Hook:entityResolution] Resolved category "${args.narrative}" to "${resolvedCategory}"`);
+      if(args.narrative) {
         args.narrative = resolvedCategory;
+      }
+
+      if(args.category_name) {
+        args.category_name = resolvedCategory;
+      }
     }
 
 
@@ -29,6 +36,17 @@ export const entityResolutionHook: HookFunction<any, any, TrendmoonContext, any>
         }
         //console.log(`[Hook:entityResolution] Resolved platform "${args.chain}" to "${resolvedPlatform}"`);
         args.chain = resolvedPlatform;
+    }
+
+    if (args.token_name) {
+        console.log(`[EntityResolutionHook] Attempting to resolve token_name: ${args.token_name}`);
+        const resolvedTokenName = entityResolver.resolveToken(args.token_name);
+        if (!resolvedTokenName) {
+            console.warn(`[EntityResolutionHook] Could not resolve token_name: ${args.token_name}. Throwing error.`);
+            throw new VibkitError('ValidationError', -32602, `Sorry, I don't recognize the token "${args.token_name}". Please try another one.`);
+        }
+        args.token_name = resolvedTokenName;
+        console.log(`[EntityResolutionHook] Resolved token_name: ${args.token_name} to ${resolvedTokenName}.`);
     }
 
     if (args.time_period) {
