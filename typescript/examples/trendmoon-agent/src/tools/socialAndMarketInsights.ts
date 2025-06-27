@@ -54,7 +54,6 @@ const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMark
             // Le serveur MCP peut renvoyer plusieurs contenus (structuré + formaté)
             console.log('[DEBUG] MCP Response:', JSON.stringify(mcpResponse, null, 2));
             
-<<<<<<< HEAD
             const content = mcpResponse.content as any[];
             if (!content || !Array.isArray(content) || content.length === 0) {
                 return createErrorTask('mcp-call-error', new VibkitError('ExecutionError', -32603, 'No content in MCP response.'));
@@ -108,13 +107,7 @@ function formatInsightsResult(result: any): string {
             message += "I couldn't find any tokens matching your criteria.";
         }
     } else if (result.social_posture) { // C'est une réponse de type 'detailed_summary'
-        message = `
-**Analysis for $${result.token.toUpperCase()}**
-
-- **Social Posture:** ${result.social_posture}
-- **Summary:** ${result.summary}
-- **Key Metrics:** Mindshare Growth (7d): ${result.key_metrics.mindshare_growth_7d * 100}%, Sentiment Score: ${result.key_metrics.sentiment_score}/10
-        `.trim();
+        message = `\n**Analysis for $${result.token.toUpperCase()}**\n\n- **Social Posture:** ${result.social_posture}\n- **Summary:** ${result.summary}\n- **Key Metrics:** Mindshare Growth (7d): ${result.key_metrics.mindshare_growth_7d * 100}%, Sentiment Score: ${result.key_metrics.sentiment_score}/10\n        `.trim();
     } else if (result.upcoming_catalysts) { // C'est une réponse de type 'catalyst_check'
         message = `**Upcoming Catalysts for $${result.token.toUpperCase()}:**\n\n`;
         if (result.upcoming_catalysts.length > 0) {
