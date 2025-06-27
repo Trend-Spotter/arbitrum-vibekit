@@ -11,7 +11,7 @@ import { entityResolutionHook } from '../hooks/index.js';
 const GetTopNarrativesSchema = z.object({
   time_period: z
     .enum(["24h", "7d", "30d"])
-    .default("7d")
+    .default("24h")
     .describe("The time period to analyze for narrative growth"),
   limit: z
     .number()
