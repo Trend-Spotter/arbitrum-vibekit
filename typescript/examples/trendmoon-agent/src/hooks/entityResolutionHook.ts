@@ -40,7 +40,7 @@ export const entityResolutionHook: HookFunction<any, any, TrendmoonContext, any>
 
     if (args.token_name) {
         console.log(`[EntityResolutionHook] Attempting to resolve token_name: ${args.token_name}`);
-        const resolvedTokenName = entityResolver.resolveToken(args.token_name);
+        const resolvedTokenName = await entityResolver.resolveToken(args.token_name, mcpClient);
         if (!resolvedTokenName) {
             console.warn(`[EntityResolutionHook] Could not resolve token_name: ${args.token_name}. Throwing error.`);
             throw new VibkitError('ValidationError', -32602, `Sorry, I don't recognize the token "${args.token_name}". Please try another one.`);

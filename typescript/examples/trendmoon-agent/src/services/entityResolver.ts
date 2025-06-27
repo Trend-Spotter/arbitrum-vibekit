@@ -37,7 +37,7 @@ function generateAliases(name: string): string[] {
     'ethereum ecosystem': ['ethereum', 'eth'],
     'bitcoin ecosystem': ['bitcoin', 'btc'],
     'binance smart chain': ['bsc', 'bnb chain'],
-    'polygon pos': ['polygon', 'matic'],
+    'polygon pos': ['polygon', 'polygon pos'],
     'avalanche': ['avax'],
     'fantom': ['ftm'],
     'harmony': ['one'],
@@ -133,11 +133,7 @@ function generateTokenAliases(tokenName: string): string[] {
     'book-of-meme': ['bome'],
     'cat-in-a-dogs-world': ['mew'],
     'slerf': ['slerf'],
-    'popcat': ['popcat'],
-    'wif-hat': ['wif'],
-    'magacoin': ['maga'],
-    'jeo-boden': ['boden'],
-    'delysium': ['agix'], // Example of a token with a common alias that might be ambiguous
+    'popcat': ['popcat']
   };
 
   const nameKey = lowerCaseName;
@@ -164,7 +160,7 @@ class EntityResolver {
   private static instance: EntityResolver;
   private categories: CanonicalEntity[] = [];
   private platforms: CanonicalEntity[] = [];
-  private tokens: CanonicalEntity[] = [];
+  private tokens: CanonicalEntity[] = []; // This will store dynamically fetched tokens
   private categoriesMap: Map<string, string> = new Map();
   private platformsMap: Map<string, string> = new Map();
   private tokensMap: Map<string, string> = new Map();
@@ -191,13 +187,21 @@ class EntityResolver {
     console.log('[EntityResolver] Cache is stale or not initialized.');
     await fs.mkdir(CACHE_DIR, { recursive: true });
 
-    const latestCacheFile = await this.findLatestCacheFile('categories');
-    if (latestCacheFile) {
-      const fileTimestamp = this.getTimestampFromFilename(latestCacheFile);
-      if (fileTimestamp && (Date.now() - fileTimestamp < cacheDurationMs)) {
-        console.log('[EntityResolver] Found fresh disk cache. Loading from disk.');
+    const latestCategoryCacheFile = await this.findLatestCacheFile('categories');
+    const latestPlatformCacheFile = await this.findLatestCacheFile('platforms');
+
+    if (latestCategoryCacheFile && latestPlatformCacheFile) {
+      const categoryFileTimestamp = this.getTimestampFromFilename(latestCategoryCacheFile);
+      const platformFileTimestamp = this.getTimestampFromFilename(latestPlatformCacheFile);
+
+      if (categoryFileTimestamp && platformFileTimestamp && 
+          (Date.now() - categoryFileTimestamp < cacheDurationMs) &&
+          (Date.now() - platformFileTimestamp < cacheDurationMs)) {
+        console.log('[EntityResolver] Found fresh disk cache for categories and platforms. Loading from disk.');
         try {
-          await this.loadCacheFromDisk(latestCacheFile);
+          await this.loadCacheFromDisk(latestCategoryCacheFile, latestPlatformCacheFile);
+          this.isInitialized = true; // Mark as initialized after loading from disk
+          this.lastMemoryCacheTime = Date.now();
           return;
         } catch (e) {
           const errorMessage = e instanceof Error ? e.message : String(e);
@@ -207,7 +211,7 @@ class EntityResolver {
     }
 
     try {
-      console.log('[EntityResolver] No valid cache found. Fetching from MCP server...');
+      console.log('[EntityResolver] No valid cache found. Fetching categories and platforms from MCP server...');
       const [categoriesRes, platformsRes] = await Promise.all([
         mcpClient.callTool({ name: 'getAllCategories', arguments: {} }),
         mcpClient.callTool({ name: 'getPlatforms', arguments: {} }),
@@ -234,12 +238,14 @@ class EntityResolver {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.warn('[EntityResolver] MCP fetch failed. Falling back to static JSON files.', errorMessage);
       try {
-        await this.loadCacheFromDisk(null, true);
+        await this.loadCacheFromDisk(null, null, true); // Use fallback
         console.log(`[EntityResolver] Successfully loaded cache from static fallback files.`);
       } catch (fallbackError) {
         console.error('[EntityResolver] CRITICAL: Failed to load from MCP and fallback.', fallbackError);
       }
     }
+    this.isInitialized = true; // Mark as initialized after fetching or fallback
+    this.lastMemoryCacheTime = Date.now();
   }
 
   private generatePlatformAliases(platformName: string): string[] {
@@ -303,79 +309,9 @@ class EntityResolver {
       aliases: this.generatePlatformAliases(name)
     }));
 
-    // Static list of common tokens with their canonical IDs (e.g., CoinGecko IDs)
-    const commonTokens = [
-      { id: 'eth', name: 'Ethereum', aliases: ['ethereum'] },
-      { id: 'btc', name: 'Bitcoin', aliases: ['bitcoin'] },
-      { id: 'sol', name: 'Solana', aliases: ['solana'] },
-      { id: 'doge', name: 'Dogecoin', aliases: ['dogecoin'] },
-      { id: 'shib', name: 'Shiba Inu', aliases: ['shiba-inu'] },
-      { id: 'arb', name: 'Arbitrum', aliases: ['arbitrum'] },
-      { id: 'op', name: 'Optimism', aliases: ['optimism'] },
-      { id: 'matic', name: 'Polygon', aliases: ['polygon'] },
-      { id: 'avax', name: 'Avalanche', aliases: ['avalanche-2'] },
-      { id: 'bnb', name: 'Binance Coin', aliases: ['binancecoin'] },
-      { id: 'ada', name: 'Cardano', aliases: ['cardano'] },
-      { id: 'xrp', name: 'XRP', aliases: ['ripple'] },
-      { id: 'link', name: 'Chainlink', aliases: ['chainlink'] },
-      { id: 'uni', name: 'Uniswap', aliases: ['uniswap'] },
-      { id: 'ltc', name: 'Litecoin', aliases: ['litecoin'] },
-      { id: 'dot', name: 'Polkadot', aliases: ['polkadot'] },
-      { id: 'trx', name: 'TRON', aliases: ['tron'] },
-      { id: 'near', name: 'NEAR Protocol', aliases: ['near-protocol'] },
-      { id: 'atom', name: 'Cosmos', aliases: ['cosmos'] },
-      { id: 'icp', name: 'Internet Computer', aliases: ['internet-computer'] },
-      { id: 'vet', name: 'VeChain', aliases: ['vechain'] },
-      { id: 'fil', name: 'Filecoin', aliases: ['filecoin'] },
-      { id: 'egld', name: 'Elrond', aliases: ['elrond-erd-2'] },
-      { id: 'xtz', name: 'Tezos', aliases: ['tezos'] },
-      { id: 'xmr', name: 'Monero', aliases: ['monero'] },
-      { id: 'etc', name: 'Ethereum Classic', aliases: ['ethereum-classic'] },
-      { id: 'xlm', name: 'Stellar', aliases: ['stellar'] },
-      { id: 'eos', name: 'EOS', aliases: ['eos'] },
-      { id: 'miota', name: 'IOTA', aliases: ['iota'] },
-      { id: 'dash', name: 'Dash', aliases: ['dash'] },
-      { id: 'zec', name: 'Zcash', aliases: ['zcash'] },
-      { id: 'mkr', name: 'Maker', aliases: ['maker'] },
-      { id: 'aave', name: 'Aave', aliases: ['aave'] },
-      { id: 'comp', name: 'Compound', aliases: ['compound'] },
-      { id: 'sushi', name: 'Sushi', aliases: ['sushi'] },
-      { id: 'crv', name: 'Curve DAO Token', aliases: ['curve-dao-token'] },
-      { id: 'mana', name: 'Decentraland', aliases: ['decentraland'] },
-      { id: 'sand', name: 'The Sandbox', aliases: ['the-sandbox'] },
-      { id: 'axs', name: 'Axie Infinity', aliases: ['axie-infinity'] },
-      { id: 'gala', name: 'Gala', aliases: ['gala'] },
-      { id: 'imx', name: 'Immutable X', aliases: ['immutable-x'] },
-      { id: 'rndr', name: 'Render Token', aliases: ['render-token'] },
-      { id: 'fet', name: 'Fetch.ai', aliases: ['fetch-ai'] },
-      { id: 'ocean', name: 'Ocean Protocol', aliases: ['ocean-protocol'] },
-      { id: 'agix', name: 'SingularityNET', aliases: ['singularitynet'] },
-      { id: 'inj', name: 'Injective Protocol', aliases: ['injective-protocol'] },
-      { id: 'tia', name: 'Celestia', aliases: ['celestia'] },
-      { id: 'sui', name: 'Sui', aliases: ['sui'] },
-      { id: 'apt', name: 'Aptos', aliases: ['aptos'] },
-      { id: 'pepe', name: 'Pepe', aliases: ['pepe'] },
-      { id: 'floki', name: 'Floki', aliases: ['floki'] },
-      { id: 'bonk', name: 'Bonk', aliases: ['bonk'] },
-      { id: 'wif', name: 'dogwifhat', aliases: ['dogwifhat'] },
-      { id: 'bome', name: 'Book of Meme', aliases: ['book-of-meme'] },
-      { id: 'mew', name: 'Cat in a Dogs World', aliases: ['cat-in-a-dogs-world'] },
-      { id: 'slerf', name: 'Slerf', aliases: ['slerf'] },
-      { id: 'popcat', name: 'Popcat', aliases: ['popcat'] },
-      { id: 'wif', name: 'WIF Hat', aliases: ['wif-hat'] },
-      { id: 'maga', name: 'MAGA Coin', aliases: ['magacoin'] },
-      { id: 'boden', name: 'Jeo Boden', aliases: ['jeo-boden'] },
-    ];
-
-    this.tokens = commonTokens.map(token => ({
-      id: token.id,
-      name: token.name,
-      aliases: generateTokenAliases(token.name).concat(token.aliases)
-    }));
-
     this.categoriesMap.clear();
     this.platformsMap.clear();
-    this.tokensMap.clear();
+    this.tokensMap.clear(); // Clear tokensMap as well
 
     for (const cat of this.categories) {
       for (const alias of cat.aliases) {
@@ -389,15 +325,11 @@ class EntityResolver {
       }
     }
 
-    for (const token of this.tokens) {
-      for (const alias of token.aliases) {
-        this.tokensMap.set(alias, token.id);
-      }
-    }
+    // Tokens will be populated dynamically by resolveToken
 
     this.isInitialized = true;
     this.lastMemoryCacheTime = Date.now();
-    console.log(`[EntityResolver] Memory cache populated with ${this.categories.length} categories, ${this.platforms.length} platforms, and ${this.tokens.length} tokens.`);
+    console.log(`[EntityResolver] Memory cache populated with ${this.categories.length} categories and ${this.platforms.length} platforms.`);
   }
 
   private async writeCacheToDisk(categories: string[], platforms: string[]) {
@@ -428,15 +360,15 @@ class EntityResolver {
     }
   }
 
-  private async loadCacheFromDisk(baseFilename: string | null, useFallback = false) {
+  private async loadCacheFromDisk(categoryFilename: string | null, platformFilename: string | null, useFallback = false) {
     let categoriesPath, platformsPath;
 
     if (useFallback) {
       categoriesPath = path.join(FALLBACK_DIR, 'categories.json');
       platformsPath = path.join(FALLBACK_DIR, 'platforms.json');
-    } else if (baseFilename) {
-      categoriesPath = path.join(CACHE_DIR, baseFilename);
-      platformsPath = path.join(CACHE_DIR, baseFilename.replace('categories', 'platforms'));
+    } else if (categoryFilename && platformFilename) {
+      categoriesPath = path.join(CACHE_DIR, categoryFilename);
+      platformsPath = path.join(CACHE_DIR, platformFilename);
     } else {
       throw new Error("No filename provided for disk cache loading.");
     }
@@ -525,7 +457,7 @@ class EntityResolver {
     return null;
   }
 
-  public resolveToken(alias: string): string | null {
+  public async resolveToken(alias: string, mcpClient: any): Promise<string | null> {
     console.log(`[EntityResolver] Attempting to resolve token alias: '${alias}'`);
     if (!alias) {
       console.log('[EntityResolver] Alias is empty.');
@@ -534,22 +466,56 @@ class EntityResolver {
     const searchTerm = alias.toLowerCase().trim();
     console.log(`[EntityResolver] Search term: '${searchTerm}'`);
 
-    // Check exact match first
+    // Check exact match first in local cache
     const exactMatch = this.tokensMap.get(searchTerm);
     if (exactMatch) {
-      console.log(`[EntityResolver] Exact match found for '${searchTerm}': '${exactMatch}'`);
+      console.log(`[EntityResolver] Exact match found in cache for '${searchTerm}': '${exactMatch}'`);
       return exactMatch;
     }
-    console.log(`[EntityResolver] No exact match for '${searchTerm}'.`);
+    console.log(`[EntityResolver] No exact match in cache for '${searchTerm}'.`);
 
-    // Standard partial matching
+    // If not found in cache, try to fetch from MCP using searchCoins
+    try {
+      console.log(`[EntityResolver] Attempting to fetch token '${searchTerm}' from MCP using searchCoins...`);
+      const mcpResponse = await mcpClient.callTool({
+        name: 'searchCoins',
+        arguments: { query: searchTerm }
+      });
+
+      if (mcpResponse.structuredContent && mcpResponse.structuredContent.coins && mcpResponse.structuredContent.coins.length > 0) {
+        const foundToken = mcpResponse.structuredContent.coins[0];
+        // Assuming the MCP returns id, name, and symbol
+        const canonicalId = foundToken.id; 
+        const canonicalName = foundToken.name;
+        const canonicalSymbol = foundToken.symbol.toLowerCase();
+
+        // Add to local cache for future use
+        const newCanonicalEntity: CanonicalEntity = {
+          id: canonicalId,
+          name: canonicalName,
+          aliases: generateTokenAliases(canonicalName).concat([canonicalSymbol])
+        };
+        this.tokens.push(newCanonicalEntity);
+        for (const alias of newCanonicalEntity.aliases) {
+          this.tokensMap.set(alias, newCanonicalEntity.id);
+        }
+        console.log(`[EntityResolver] Found and cached token '${searchTerm}': '${canonicalId}'`);
+        return canonicalId;
+      } else {
+        console.log(`[EntityResolver] MCP searchCoins found no results for '${searchTerm}'.`);
+      }
+    } catch (error) {
+      console.error(`[EntityResolver] Error fetching token from MCP for '${searchTerm}':`, error);
+    }
+
+    // Standard partial matching (only if not found via MCP)
     for (const [key, value] of this.tokensMap) {
       if (key.includes(searchTerm) || searchTerm.includes(key)) {
-        console.log(`[EntityResolver] Partial match found: key='${key}', value='${value}' for search term '${searchTerm}'`);
+        console.log(`[EntityResolver] Partial match found in cache: key='${key}', value='${value}' for search term '${searchTerm}'`);
         return value;
       }
     }
-    console.log(`[EntityResolver] No partial match found for '${searchTerm}'.`);
+    console.log(`[EntityResolver] No partial match found in cache for '${searchTerm}'.`);
 
     return null;
   }
