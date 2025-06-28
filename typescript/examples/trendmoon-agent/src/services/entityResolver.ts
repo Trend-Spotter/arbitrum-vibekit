@@ -499,8 +499,8 @@ class EntityResolver {
         for (const alias of newCanonicalEntity.aliases) {
           this.tokensMap.set(alias, newCanonicalEntity.id);
         }
-        console.log(`[EntityResolver] Found and cached token '${searchTerm}': '${canonicalId}'`);
-        return canonicalId;
+        console.log(`[EntityResolver] Found and cached token '${searchTerm}': '${canonicalId}' with name '${canonicalName}'`);
+        return canonicalName;
       } else {
         console.log(`[EntityResolver] MCP searchCoins found no results for '${searchTerm}'.`);
       }
