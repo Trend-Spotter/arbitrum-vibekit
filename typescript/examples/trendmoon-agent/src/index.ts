@@ -7,6 +7,7 @@ import type { TrendmoonContext } from './context/types.js';
 import { getSocialAndMarketInsightsTool } from './tools/socialAndMarketInsights.js';
 import { getAvailableOptionsTool } from './tools/getAvailableOptions.js';
 import { getTopCategoryCoins } from './tools/getTopCategoryCoins.js';
+import { getTopNarrativesTool } from './tools/getTopNarratives.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -21,6 +22,7 @@ CRITICAL LANGUAGE INSTRUCTION:
 - If the user asks their question in English, you MUST respond entirely in English
 - If the user asks their question in French, you MUST respond entirely in French  
 - If the user asks their question in Spanish, you MUST respond entirely in Spanish
+- If the user asks their question in Portuguese, you MUST respond entirely in Portuguese
 - Match the exact language of the user's question, regardless of your system locale
 - Do NOT default to French - always match the user's language
 
@@ -98,7 +100,7 @@ export const agentConfig: AgentConfig = {
         'Find growing DeFi projects on Arbitrum',
         'What narrative is trending this week?',
       ],
-      tools: [getSocialAndMarketInsightsTool, getAvailableOptionsTool, getTopCategoryCoins], // Real tools for crypto insights
+      tools: [getSocialAndMarketInsightsTool, getAvailableOptionsTool, getTopCategoryCoins, getTopNarrativesTool], // Real tools for crypto insights
 
       // Connect to our MCP server to access all Trendmoon tools
       mcpServers: [

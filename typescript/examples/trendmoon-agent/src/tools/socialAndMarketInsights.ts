@@ -30,6 +30,14 @@ const SocialAndMarketInsightsSchema = z.object({
 
     start_date: z.string().datetime().optional().describe("The start date for a custom time range (ISO 8601 format)."),
     end_date: z.string().datetime().optional().describe("The end date for a custom time range (ISO 8601 format)."),
+}).refine((data) => {
+    if (data.analysis_type === 'list' && !data.narrative) {
+        return false; // Invalid if analysis_type is 'list' and narrative is missing
+    }
+    return true;
+}, {
+    message: "'narrative' is required when 'analysis_type' is 'list'.",
+    path: ['narrative'],
 });
 
 const baseSocialAndMarketInsightsTool: VibkitToolDefinition<typeof SocialAndMarketInsightsSchema> = {
