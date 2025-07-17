@@ -10,6 +10,17 @@ import { getTopCategoryCoins } from './tools/getTopCategoryCoins.js';
 import { getTopNarratives } from './tools/getTopNarratives.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+
+// --- MCP Server Path Resolution ---
+// The `arbitrum-vibekit-core` dynamically starts the MCP server as a separate process.
+// It needs a direct file path to the server's entry point. Relying on Node's default
+// module resolution can fail in a pnpm monorepo due to complex CJS/ESM interactions.
+// To fix this, we explicitly resolve the path to 'trendmoon-mcp-server' here, in the
+// agent's context (which can always find its direct dependency), and pass the
+// absolute path to the agent configuration. This removes any ambiguity.
+const require = createRequire(import.meta.url);
+const trendmoonMcpPath = require.resolve('trendmoon-mcp-server');
 
 // Get __dirname equivalent for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -109,7 +120,7 @@ export const agentConfig: AgentConfig = {
         {
           // Use the actual trendmoon-mcp-server module
           command: 'node',
-          moduleName: 'trendmoon-mcp-server',
+          moduleName: trendmoonMcpPath, // Use the resolved path here
           env: {
             TRENDMOON_API_KEY: process.env.TRENDMOON_API_KEY || '',
             TRENDMOON_API_URL: process.env.TRENDMOON_API_URL || 'https://api.qa.trendmoon.ai',
