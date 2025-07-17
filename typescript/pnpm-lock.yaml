@@ -84,13 +84,13 @@ importers:
         version: 5.3.0
       a2a-samples-js:
         specifier: workspace:*
-        version: file:lib/a2a(ws@8.18.2)(zod@3.25.61)
+        version: link:../../lib/a2a
       ai:
         specifier: ^4.3.2
         version: 4.3.16(react@19.1.0)(zod@3.25.61)
       arbitrum-vibekit-core:
         specifier: workspace:*
-        version: link:../../lib/arbitrum-vibekit-core
+        version: file:lib/arbitrum-vibekit-core(react@19.1.0)(zod@3.25.61)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -145,7 +145,7 @@ importers:
         version: 3.5.3
       test-utils:
         specifier: workspace:*
-        version: link:../../lib/test-utils
+        version: file:lib/test-utils(typescript@5.8.3)(ws@8.18.2)
       tsx:
         specifier: ^4.6.2
         version: 4.20.1
@@ -169,7 +169,7 @@ importers:
         version: 4.3.16(react@19.1.0)(zod@3.25.61)
       arbitrum-vibekit-core:
         specifier: workspace:*
-        version: link:../../lib/arbitrum-vibekit-core
+        version: file:lib/arbitrum-vibekit-core(react@19.1.0)(zod@3.25.61)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -239,13 +239,13 @@ importers:
         version: 0.4.6(zod@3.25.61)
       a2a-samples-js:
         specifier: workspace:*
-        version: link:../../lib/a2a
+        version: file:lib/a2a(ws@8.18.2)(zod@3.25.61)
       ai:
         specifier: ^4.3.2
         version: 4.3.16(react@19.1.0)(zod@3.25.61)
       arbitrum-vibekit-core:
         specifier: workspace:*
-        version: link:../../lib/arbitrum-vibekit-core
+        version: file:lib/arbitrum-vibekit-core(react@19.1.0)(zod@3.25.61)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -300,7 +300,7 @@ importers:
         version: 3.5.3
       test-utils:
         specifier: workspace:*
-        version: file:lib/test-utils(typescript@5.8.3)(ws@8.18.2)
+        version: link:../../lib/test-utils
       tsx:
         specifier: ^4.6.2
         version: 4.20.1
@@ -327,7 +327,7 @@ importers:
         version: 4.3.16(react@19.1.0)(zod@3.25.61)
       arbitrum-vibekit-core:
         specifier: workspace:*
-        version: link:../../lib/arbitrum-vibekit-core
+        version: file:lib/arbitrum-vibekit-core(react@19.1.0)(zod@3.25.61)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -391,7 +391,7 @@ importers:
         version: 4.3.16(react@19.1.0)(zod@3.25.61)
       arbitrum-vibekit-core:
         specifier: workspace:*
-        version: link:../../lib/arbitrum-vibekit-core
+        version: file:lib/arbitrum-vibekit-core(react@19.1.0)(zod@3.25.61)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -435,12 +435,21 @@ importers:
 
   examples/trendmoon-agent:
     dependencies:
+      '@google-a2a/types':
+        specifier: github:google-a2a/A2A#path:types
+        version: types@git+https://git@github.com:google-a2a/A2A.git#eb5499cd90947b40b936a064e14f1b9f6e8caab1&path:types
       '@modelcontextprotocol/sdk':
         specifier: ^1.5.0
         version: 1.12.1
-      axios:
-        specifier: ^1.9.0
-        version: 1.9.0
+      '@openrouter/ai-sdk-provider':
+        specifier: ^0.4.5
+        version: 0.4.6(zod@3.25.61)
+      ai:
+        specifier: ^4.3.2
+        version: 4.3.16(react@19.1.0)(zod@3.25.61)
+      arbitrum-vibekit-core:
+        specifier: workspace:*
+        version: file:lib/arbitrum-vibekit-core(react@19.1.0)(zod@3.25.61)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -450,18 +459,12 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.21.2
-      node-fetch:
-        specifier: ^3.3.2
-        version: 3.3.2
-      openai:
-        specifier: ^4.28.0
-        version: 4.104.0(ws@8.18.2)(zod@3.25.61)
-      technicalindicators:
-        specifier: ^3.1.0
-        version: 3.1.0
-      tsx:
-        specifier: ^4.6.2
-        version: 4.20.1
+      nanoid:
+        specifier: ^5.0.7
+        version: 5.1.5
+      trendmoon-mcp-server:
+        specifier: workspace:*
+        version: link:../../lib/mcp-tools/trendmoon-mcp-server
       zod:
         specifier: ^3.24.3
         version: 3.25.61
@@ -470,14 +473,23 @@ importers:
         specifier: ^2.8.17
         version: 2.8.19
       '@types/express':
-        specifier: ^4.17.21
-        version: 4.17.23
+        specifier: ^5.0.0
+        version: 5.0.3
       '@types/node':
         specifier: ^20.10.0
         version: 20.19.0
+      prettier:
+        specifier: ^3.5.3
+        version: 3.5.3
+      tsx:
+        specifier: ^4.6.2
+        version: 4.20.1
       typescript:
-        specifier: ^5.3.3
+        specifier: ^5.3.0
         version: 5.8.3
+      vitest:
+        specifier: ^3.2.1
+        version: 3.2.3(@types/node@20.19.0)(@vitest/ui@3.2.3)(tsx@4.20.1)(yaml@2.8.0)
 
   lib/a2a:
     dependencies:
@@ -700,6 +712,37 @@ importers:
         specifier: ^5.8.2
         version: 5.8.3
 
+  lib/mcp-tools/trendmoon-mcp-server:
+    dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.5.0
+        version: 1.12.1
+      '@trendmoon/mcp-server':
+        specifier: ^0.1.1
+        version: 0.1.1
+      dotenv:
+        specifier: ^16.3.1
+        version: 16.5.0
+      zod:
+        specifier: ^3.24.3
+        version: 3.25.61
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.0
+        version: 20.19.0
+      prettier:
+        specifier: ^3.5.3
+        version: 3.5.3
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@20.19.0)(typescript@5.8.3)
+      tsx:
+        specifier: ^4.6.2
+        version: 4.20.1
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
   lib/test-utils:
     dependencies:
       a2a-samples-js:
@@ -744,7 +787,7 @@ importers:
         version: 4.3.16(react@19.1.0)(zod@3.25.61)
       arbitrum-vibekit-core:
         specifier: workspace:*
-        version: link:../../lib/arbitrum-vibekit-core
+        version: file:lib/arbitrum-vibekit-core(react@19.1.0)(zod@3.25.61)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -802,7 +845,7 @@ importers:
         version: 4.3.16(react@19.1.0)(zod@3.25.61)
       arbitrum-vibekit-core:
         specifier: workspace:*
-        version: link:../../lib/arbitrum-vibekit-core
+        version: file:lib/arbitrum-vibekit-core(react@19.1.0)(zod@3.25.61)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -860,7 +903,7 @@ importers:
         version: 4.3.16(react@19.1.0)(zod@3.25.61)
       arbitrum-vibekit-core:
         specifier: workspace:*
-        version: link:../../lib/arbitrum-vibekit-core
+        version: file:lib/arbitrum-vibekit-core(react@19.1.0)(zod@3.25.61)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -1753,6 +1796,15 @@ packages:
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
 
+  '@trendmoon/api-client@0.1.2':
+    resolution: {integrity: sha512-FcGqARxzKfGWs7BF0cp9emRmrZQOtbABI9Gu+VL+sN4kUXD6Mskn64WIUSFV3kcAG4zQ8CRKXgKGyBaNkkeVBg==}
+    engines: {node: '>=16.0.0'}
+
+  '@trendmoon/mcp-server@0.1.1':
+    resolution: {integrity: sha512-UjzH3wrZNZG+e1ZLfffqBcnxjALxGSqIOQMNXfgq/wSWVjIQiQrUcAtbSNlysqLJ12uB4duN1J7ulXvnyhC3cQ==}
+    engines: {node: '>=16.0.0'}
+    hasBin: true
+
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
 
@@ -2084,6 +2136,11 @@ packages:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
 
+  arbitrum-vibekit-core@file:lib/arbitrum-vibekit-core:
+    resolution: {directory: lib/arbitrum-vibekit-core, type: directory}
+    peerDependencies:
+      zod: ^3.24.3
+
   arg@4.1.3:
     resolution: {integrity: sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==}
 
@@ -2329,6 +2386,10 @@ packages:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
 
+  commander@11.1.0:
+    resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
+    engines: {node: '>=16'}
+
   component-emitter@1.3.1:
     resolution: {integrity: sha512-T0+barUSQRTUQASh8bx02dl+DhF54GtIDY13Y3m9oWTklKbb3Wv974meRpeZ3lp1JpLVECWWNHC4vaG2XHXouQ==}
 
@@ -2499,6 +2560,10 @@ packages:
 
   elliptic@6.6.1:
     resolution: {integrity: sha512-RaddvvMatK2LJHqFJ+YA4WysVN5Ita9E35botqIYspQ4TkRAlCicdzKOjlyv/1Za5RyTNn7di//eEV0uTAfe3g==}
+
+  ember-mcp-tool-server@file:lib/mcp-tools/emberai-mcp:
+    resolution: {directory: lib/mcp-tools/emberai-mcp, type: directory}
+    hasBin: true
 
   ember-schemas@file:lib/ember-schemas:
     resolution: {directory: lib/ember-schemas, type: directory}
@@ -4252,6 +4317,10 @@ packages:
     resolution: {integrity: sha512-OZs6gsjF4vMp32qrCbiVSkrFmXtG/AZhY3t0iAMrMBiAZyV9oALtXO8hsrHbMXF9x6L3grlFuwW2oAz7cav+Gw==}
     engines: {node: '>= 0.6'}
 
+  types@git+https://git@github.com:google-a2a/A2A.git#eb5499cd90947b40b936a064e14f1b9f6e8caab1&path:types:
+    resolution: {commit: eb5499cd90947b40b936a064e14f1b9f6e8caab1, path: types, repo: git@github.com:google-a2a/A2A.git, type: git}
+    version: 1.0.0
+
   types@https://codeload.github.com/google-a2a/A2A/tar.gz/ee0931a1a0f22209e70127a3fde6b70887e545e3#path:types:
     resolution: {path: types, tarball: https://codeload.github.com/google-a2a/A2A/tar.gz/ee0931a1a0f22209e70127a3fde6b70887e545e3}
     version: 1.0.0
@@ -5664,6 +5733,26 @@ snapshots:
 
   '@tootallnate/once@2.0.0': {}
 
+  '@trendmoon/api-client@0.1.2':
+    dependencies:
+      dotenv: 16.5.0
+      node-fetch: 3.3.2
+      zod: 3.25.61
+
+  '@trendmoon/mcp-server@0.1.1':
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.12.1
+      '@trendmoon/api-client': 0.1.2
+      axios: 1.9.0
+      commander: 11.1.0
+      cors: 2.8.5
+      express: 4.21.2
+      technicalindicators: 3.1.0
+      zod: 3.25.61
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+
   '@tsconfig/node10@1.0.11': {}
 
   '@tsconfig/node12@1.0.11': {}
@@ -5709,6 +5798,7 @@ snapshots:
       '@types/qs': 6.14.0
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.5
+    optional: true
 
   '@types/express-serve-static-core@5.0.6':
     dependencies:
@@ -5723,6 +5813,7 @@ snapshots:
       '@types/express-serve-static-core': 4.19.6
       '@types/qs': 6.14.0
       '@types/serve-static': 1.15.8
+    optional: true
 
   '@types/express@5.0.3':
     dependencies:
@@ -5951,7 +6042,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.3(@types/node@18.19.111)(@vitest/ui@3.2.3)(tsx@4.20.1)(yaml@2.8.0)
+      vitest: 3.2.3(@types/node@20.19.0)(@vitest/ui@3.2.3)(tsx@4.20.1)(yaml@2.8.0)
 
   '@vitest/utils@3.2.3':
     dependencies:
@@ -6073,6 +6164,27 @@ snapshots:
     dependencies:
       normalize-path: 3.0.0
       picomatch: 2.3.1
+
+  arbitrum-vibekit-core@file:lib/arbitrum-vibekit-core(react@19.1.0)(zod@3.25.61):
+    dependencies:
+      '@ai-sdk/xai': 1.2.16(zod@3.25.61)
+      '@google-a2a/types': types@git+https://git@github.com:google-a2a/A2A.git#eb5499cd90947b40b936a064e14f1b9f6e8caab1&path:types
+      '@hyperbolic/ai-sdk-provider': 0.1.3(react@19.1.0)
+      '@modelcontextprotocol/sdk': 1.12.1
+      '@openrouter/ai-sdk-provider': 0.4.6(zod@3.25.61)
+      ai: 4.3.16(react@19.1.0)(zod@3.25.61)
+      cors: 2.8.5
+      ember-mcp-tool-server: file:lib/mcp-tools/emberai-mcp
+      ember-schemas: file:lib/ember-schemas
+      escape-html: 1.0.3
+      express: 5.1.0
+      nanoid: 5.1.5
+      zod: 3.25.61
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - react
+      - supports-color
 
   arg@4.1.3: {}
 
@@ -6373,6 +6485,8 @@ snapshots:
     dependencies:
       delayed-stream: 1.0.0
 
+  commander@11.1.0: {}
+
   component-emitter@1.3.1: {}
 
   concat-map@0.0.1: {}
@@ -6529,6 +6643,16 @@ snapshots:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
       minimalistic-crypto-utils: 1.0.1
+
+  ember-mcp-tool-server@file:lib/mcp-tools/emberai-mcp:
+    dependencies:
+      '@emberai/sdk-typescript': 0.3.0-beta.12
+      '@grpc/grpc-js': 1.13.4
+      '@modelcontextprotocol/sdk': 1.12.1
+      ember-schemas: file:lib/ember-schemas
+      zod: 3.25.61
+    transitivePeerDependencies:
+      - supports-color
 
   ember-schemas@file:lib/ember-schemas:
     dependencies:
@@ -8586,6 +8710,24 @@ snapshots:
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
+  ts-node@10.9.2(@types/node@20.19.0)(typescript@5.8.3):
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.11
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 20.19.0
+      acorn: 8.15.0
+      acorn-walk: 8.3.4
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.8.3
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+
   ts-pattern@5.7.1: {}
 
   tslib@2.8.1: {}
@@ -8615,6 +8757,13 @@ snapshots:
       content-type: 1.0.5
       media-typer: 1.1.0
       mime-types: 3.0.1
+
+  types@git+https://git@github.com:google-a2a/A2A.git#eb5499cd90947b40b936a064e14f1b9f6e8caab1&path:types:
+    dependencies:
+      typescript-json-schema: 0.65.1
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
 
   types@https://codeload.github.com/google-a2a/A2A/tar.gz/ee0931a1a0f22209e70127a3fde6b70887e545e3#path:types:
     dependencies:
