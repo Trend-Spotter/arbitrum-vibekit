@@ -4,6 +4,9 @@
   "description": "Trendmoon MCP Server using @trendmoon/mcp-server library",
   "type": "module",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "bin": {
     "trendmoon-mcp-server": "dist/index.js"
   },

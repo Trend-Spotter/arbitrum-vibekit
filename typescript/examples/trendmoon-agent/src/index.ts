@@ -10,21 +10,19 @@ import { getTopCategoryCoins } from './tools/getTopCategoryCoins.js';
 import { getTopNarratives } from './tools/getTopNarratives.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { createRequire } from 'module';
 
 // --- MCP Server Path Resolution ---
-// The `arbitrum-vibekit-core` dynamically starts the MCP server as a separate process.
-// It needs a direct file path to the server's entry point. Relying on Node's default
-// module resolution can fail in a pnpm monorepo due to complex CJS/ESM interactions.
-// To fix this, we explicitly resolve the path to 'trendmoon-mcp-server' here, in the
-// agent's context (which can always find its direct dependency), and pass the
-// absolute path to the agent configuration. This removes any ambiguity.
-const require = createRequire(import.meta.url);
-const trendmoonMcpPath = require.resolve('trendmoon-mcp-server');
-
-// Get __dirname equivalent for ES modules
+// To ensure robust behavior in production, we manually construct the absolute
+// path to the MCP server's entrypoint. This avoids Node's complex module
+// resolution (`require.resolve`), which can be unreliable in a pnpm monorepo.
+// This method relies on the monorepo's fixed directory structure, which is
+// consistent across local and remote environments.
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const trendmoonMcpPath = path.resolve(
+  __dirname,
+  '../../../lib/mcp-tools/trendmoon-mcp-server/dist/index.js'
+);
 
 // --- The System Prompt for the Trendmoon Agent ---
 const TRENDMOON_SYSTEM_PROMPT = `You are a Trendmoon Agent that provides insights on social trends and market data for crypto tokens. 
@@ -120,7 +118,7 @@ export const agentConfig: AgentConfig = {
         {
           // Use the actual trendmoon-mcp-server module
           command: 'node',
-          moduleName: trendmoonMcpPath, // Use the resolved path here
+          moduleName: trendmoonMcpPath, // Use the manually constructed, absolute path
           env: {
             TRENDMOON_API_KEY: process.env.TRENDMOON_API_KEY || '',
             TRENDMOON_API_URL: process.env.TRENDMOON_API_URL || 'https://api.qa.trendmoon.ai',
