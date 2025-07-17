@@ -79,6 +79,7 @@ const openrouter = createOpenRouter({
 export const agentConfig: AgentConfig = {
   name: process.env.AGENT_NAME || 'Trendmoon Agent',
   version: process.env.AGENT_VERSION || '1.0.0',
+  protocolVersion: '1.0.0', 
   description:
     process.env.AGENT_DESCRIPTION ||
     'Provides insights on social trends and market data for crypto tokens. Use this for questions about mindshare, sentiment, catalysts, and token performance.',
