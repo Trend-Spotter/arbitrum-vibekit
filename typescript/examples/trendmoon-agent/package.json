@@ -17,7 +17,11 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx}\""
   },
   "dependencies": {
+    "@google-a2a/types": "workspace:*",
     "@modelcontextprotocol/sdk": "catalog:",
+    "@openrouter/ai-sdk-provider": "^0.4.6",
+    "ai": "^4.3.16",
+    "arbitrum-vibekit-core": "workspace:*",
     "axios": "^1.9.0",
     "cors": "^2.8.5",
     "dotenv": "catalog:",
@@ -25,6 +29,7 @@
     "node-fetch": "^3.3.2",
     "openai": "^4.28.0",
     "technicalindicators": "^3.1.0",
+    "trendmoon-mcp-server": "workspace:*",
     "tsx": "catalog:",
     "zod": "catalog:"
   },
