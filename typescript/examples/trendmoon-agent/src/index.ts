@@ -7,7 +7,7 @@ import type { TrendmoonContext } from './context/types.js';
 import { getSocialAndMarketInsightsTool } from './tools/socialAndMarketInsights.js';
 import { getAvailableOptionsTool } from './tools/getAvailableOptions.js';
 import { getTopCategoryCoins } from './tools/getTopCategoryCoins.js';
-import { getTopNarratives } from './tools/getTopNarratives.js';
+import { getTopNarrativesTool } from './tools/getTopNarratives.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -88,7 +88,6 @@ const openrouter = createOpenRouter({
 export const agentConfig: AgentConfig = {
   name: process.env.AGENT_NAME || 'Trendmoon Agent',
   version: process.env.AGENT_VERSION || '1.0.0',
-  protocolVersion: '1.0.0', 
   description:
     process.env.AGENT_DESCRIPTION ||
     'Provides insights on social trends and market data for crypto tokens. Use this for questions about mindshare, sentiment, catalysts, and token performance.',
@@ -109,16 +108,15 @@ export const agentConfig: AgentConfig = {
         'Analyze BTC social trends',
         'Find growing DeFi projects on Arbitrum',
         'What narrative is trending this week?',
-        'what are the top narratives right now by mindshare growth?',
       ],
-      tools: [getSocialAndMarketInsightsTool, getAvailableOptionsTool, getTopCategoryCoins, getTopNarratives], // Real tools for crypto insights
+      tools: [getSocialAndMarketInsightsTool, getAvailableOptionsTool, getTopCategoryCoins, getTopNarrativesTool], // Real tools for crypto insights
 
       // Connect to our MCP server to access all Trendmoon tools
-      mcpServers: [
-        {
+      mcpServers: {
+        'trendmoon-mcp-server': {
           // Use the actual trendmoon-mcp-server module
           command: 'node',
-          moduleName: trendmoonMcpPath, // Use the manually constructed, absolute path
+          args: [trendmoonMcpPath], // Use the manually constructed, absolute path
           env: {
             TRENDMOON_API_KEY: process.env.TRENDMOON_API_KEY || '',
             TRENDMOON_API_URL: process.env.TRENDMOON_API_URL || 'https://api.qa.trendmoon.ai',
@@ -127,7 +125,7 @@ export const agentConfig: AgentConfig = {
             LLM_MODEL_NAME: process.env.LLM_MODEL || 'google/gemini-2.5-flash-preview',
           },
         },
-      ],
+      },
 
       // NO HANDLER: Let the LLM orchestrate using the MCP tools directly
       // The LLM will automatically discover and use available tools from the MCP server
