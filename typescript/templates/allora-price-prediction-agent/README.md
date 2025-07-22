@@ -2,8 +2,6 @@
 
 An AI agent that provides price predictions using Allora's prediction markets data through the Model Context Protocol (MCP).
 
-**📚 Learn the concepts**: This agent demonstrates single-skill architecture from [Lesson 19: Skills Foundation](https://github.com/EmberAGI/arbitrum-vibekit/blob/main/typescript/lib/arbitrum-vibekit-core/docs/lesson-19.md) and advanced hook patterns from [Lesson 16: Tool Enhancement](https://github.com/EmberAGI/arbitrum-vibekit/blob/main/typescript/lib/arbitrum-vibekit-core/docs/lesson-16.md).
-
 ## Overview
 
 The Allora Price Prediction Agent leverages the Arbitrum Vibekit framework to create an on-chain AI agent that can:
@@ -15,10 +13,10 @@ The Allora Price Prediction Agent leverages the Arbitrum Vibekit framework to cr
 
 ## Features
 
-- **Single Skill Design**: Streamlined price prediction skill with LLM orchestration ([Lesson 19](https://github.com/EmberAGI/arbitrum-vibekit/blob/main/typescript/lib/arbitrum-vibekit-core/docs/lesson-19.md))
+- **Single Skill Design**: Streamlined price prediction skill with LLM orchestration
 - **Smart Token Mapping**: Automatically maps token symbols to Allora topic IDs
-- **Hook-Based Architecture**: Clean separation of concerns using pre/post hooks ([Lesson 16](https://github.com/EmberAGI/arbitrum-vibekit/blob/main/typescript/lib/arbitrum-vibekit-core/docs/lesson-16.md))
-- **MCP Integration**: Direct integration with Allora MCP server via STDIO ([Lesson 2](https://github.com/EmberAGI/arbitrum-vibekit/blob/main/typescript/lib/arbitrum-vibekit-core/docs/lesson-02.md))
+- **Hook-Based Architecture**: Clean separation of concerns using pre/post hooks
+- **MCP Integration**: Direct integration with Allora MCP server via STDIO
 - **Error Handling**: Comprehensive error handling for unknown tokens and API failures
 
 ## Architecture
@@ -34,7 +32,7 @@ The agent has one main skill:
 
 ### Tool Design
 
-The price prediction tool uses a hook-based approach ([Lesson 16](https://github.com/EmberAGI/arbitrum-vibekit/blob/main/typescript/lib/arbitrum-vibekit-core/docs/lesson-16.md)):
+The price prediction tool uses a hook-based approach:
 
 1. **Pre-hook (Topic Discovery)**:
 
