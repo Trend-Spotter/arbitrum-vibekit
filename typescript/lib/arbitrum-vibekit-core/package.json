@@ -16,6 +16,7 @@
     "@ai-sdk/openai": "^1.3.22",
     "@ai-sdk/xai": "^1.2.16",
     "@google-a2a/types": "workspace:*",
+    "@google-a2a/types": "https://github.com/google-a2a/A2A.git#path:types",
     "@hyperbolic/ai-sdk-provider": "^0.1.3",
     "@modelcontextprotocol/sdk": "catalog:",
     "@openrouter/ai-sdk-provider": "catalog:",

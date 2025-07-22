@@ -1,14 +1,20 @@
 {
-  "name": "trendmoon-mcp-agent",
+  "name": "trendmoon-agent",
   "version": "1.0.0",
-  "description": "Trendmoon MCP Agent",
+  "description": "Trendmoon Agent - Provides insights on social trends and market data for crypto tokens using Trendmoon MCP server",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc --build",
-    "dev": "pnpm build && tsx src/index.ts",
+    "dev": "tsx src/index.ts",
+    "cli": "tsx src/cli.ts",
     "start": "node dist/index.js",
-    "inspect:npx": "pnpm run build && npx -y @modelcontextprotocol/inspector node ./dist/index.js"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:run": "vitest run",
+    "inspect:npx": "pnpm run build && npx -y @modelcontextprotocol/inspector node ./dist/index.js",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx}\""
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "catalog:",
