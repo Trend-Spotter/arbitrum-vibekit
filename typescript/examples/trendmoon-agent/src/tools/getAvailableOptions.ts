@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import {
   type VibkitToolDefinition,
-  type Task,
   createSuccessTask,
   createErrorTask,
   VibkitError,
   withHooks,
 } from 'arbitrum-vibekit-core';
+import type { Task } from '@google-a2a/types';
 import { entityResolver } from '../services/entityResolver.js';
 import { entityResolutionHook } from '../hooks/index.js';
 import type { TrendmoonContext } from '../context/types.js';
