@@ -17,18 +17,23 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx}\""
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.3",
+    "@google-a2a/types": "workspace:*",
+    "@modelcontextprotocol/sdk": "catalog:",
     "@openrouter/ai-sdk-provider": "^0.4.6",
     "ai": "^4.3.16",
     "arbitrum-vibekit-core": "workspace:*",
+    "axios": "^1.9.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "eventsource": "^4.0.0",
     "express": "^4.21.2",
     "nanoid": "^5.0.7",
     "node-fetch": "^3.3.2",
+    "openai": "^4.28.0",
+    "technicalindicators": "^3.1.0",
     "trendmoon-mcp-server": "workspace:*",
-    "zod": "^3.22.4"
+    "tsx": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

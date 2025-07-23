@@ -30,6 +30,28 @@ export const chatAgents = [
     ],
   },
   // {
+  //   id: 'langgraph-workflow' as const,
+  //   name: 'Greeting Optimizer',
+  //   description: 'LangGraph workflow agent that optimizes greetings',
+  //   suggestedActions: [
+  //     {
+  //       title: 'Optimize',
+  //       label: 'hello',
+  //       action: 'Optimize: hello',
+  //     },
+  //     {
+  //       title: 'Make',
+  //       label: 'hi better',
+  //       action: 'Make this greeting better: hi',
+  //     },
+  //     {
+  //       title: 'Improve',
+  //       label: 'good morning',
+  //       action: 'Optimize: good morning',
+  //     },
+  //   ],
+  // },
+  // {
   //   id: 'quickstart-agent-template' as const,
   //   name: 'Quickstart',
   //   description: 'Quickstart agent',
