@@ -15,12 +15,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Clone onchain-actions repository
-        uses: actions/checkout@v4
-        with:
-          repository: EmberAGI/onchain-actions
-          path: typescript/onchain-actions
-          token: ${{ secrets.GH_PAT }}
+      # - name: Clone onchain-actions repository
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: EmberAGI/onchain-actions
+      #     path: typescript/onchain-actions
+      #     token: ${{ secrets.GH_PAT }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
